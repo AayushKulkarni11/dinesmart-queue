@@ -18,6 +18,7 @@ router.put("/admin/queue/:id/call", callCustomer);
 router.put("/admin/queue/:id/seat", seatCustomer);
 router.put("/admin/queue/:id/wait-estimate", updateWaitEstimate);
 router.delete("/admin/queue/:id", removeQueueEntry);
+router.put("/admin/tables/bulk", require("../controllers/adminController").bulkUpdateTables);
 router.put("/admin/tables/:id/status", updateTableStatus);
 
 module.exports = router;

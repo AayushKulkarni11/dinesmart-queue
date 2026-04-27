@@ -6,7 +6,8 @@ import { Clock, Users, Hash, TrendingUp, User2, Minus, Plus } from "lucide-react
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE_URL } from "@/lib/api";
+import { io, Socket } from "socket.io-client";
 
 type QueueEntry = {
   token: string;
@@ -78,13 +79,34 @@ export const QueueSection = () => {
         if (!cancelled) setLoading(false);
       }
     };
+
     load();
-    const interval = window.setInterval(() => {
+
+    const socket = io(API_BASE_URL);
+    socket.on("queueUpdated", () => {
       load(true);
-    }, 15000);
+    });
+
+    socket.on("customerCalled", (data: { name: string; tableNumber: number | null }) => {
+      // Use a functional state check to avoid stale closures
+      setQueue((currentQueue) => {
+        const isMe =
+          data.name === "You" ||
+          (currentToken && currentQueue.find((q) => q.you)?.name === data.name);
+        
+        if (isMe) {
+          toast.success("Table Ready!", {
+            description: data.tableNumber ? `Please proceed to table ${data.tableNumber}` : "Your table is ready",
+            duration: 10000,
+          });
+        }
+        return currentQueue;
+      });
+    });
+
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      socket.disconnect();
     };
   }, [currentToken]);
 

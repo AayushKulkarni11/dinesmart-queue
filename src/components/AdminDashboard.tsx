@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Users, Clock, TrendingUp, Phone, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE_URL } from "@/lib/api";
+import { io, Socket } from "socket.io-client";
 
 type QueueItem = {
   id: string;
@@ -102,10 +103,8 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     let cancelled = false;
-
     const loadDashboard = async (silent = false) => {
       if (!token) return;
-
       try {
         const data = await apiFetch<DashboardData>("/api/admin/dashboard", { token });
         if (!cancelled) {
@@ -127,13 +126,15 @@ export const AdminDashboard = () => {
     };
 
     loadDashboard();
-    const interval = window.setInterval(() => {
+
+    const socket = io(API_BASE_URL);
+    socket.on("queueUpdated", () => {
       loadDashboard(true);
-    }, 10000);
+    });
 
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      socket.disconnect();
     };
   }, [logout, token]);
 
@@ -192,17 +193,12 @@ export const AdminDashboard = () => {
   ) => {
     await mutate(
       key,
-      async () => {
-        await Promise.all(
-          tables.map((table) =>
-            apiFetch(`/api/admin/tables/${table._id}/status`, {
-              method: "PUT",
-              token,
-              body: { status },
-            }),
-          ),
-        );
-      },
+      () =>
+        apiFetch("/api/admin/tables/bulk", {
+          method: "PUT",
+          token,
+          body: { status },
+        }),
       successMessage,
       successDescription,
     );

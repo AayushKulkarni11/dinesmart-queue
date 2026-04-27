@@ -208,6 +208,36 @@ async function updateTableStatus(req, res, next) {
   }
 }
 
+async function bulkUpdateTables(req, res, next) {
+  try {
+    const { status, reservation } = req.body;
+
+    if (!["available", "occupied", "reserved"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid table status", data: null });
+    }
+
+    const update = { status };
+    if (status === "available") {
+      update.$unset = { reservation: 1 };
+    } else if (reservation && typeof reservation === "object") {
+      update.reservation = reservation;
+    }
+
+    await Table.updateMany({}, update);
+
+    const io = getIO();
+    io.emit("queueUpdated");
+
+    return res.status(200).json({
+      success: true,
+      message: "All tables updated successfully",
+      data: null,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   getDashboard,
   callCustomer,
@@ -215,4 +245,5 @@ module.exports = {
   updateWaitEstimate,
   removeQueueEntry,
   updateTableStatus,
+  bulkUpdateTables,
 };
