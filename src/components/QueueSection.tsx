@@ -2,12 +2,20 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, Users, Hash, TrendingUp, User2, Minus, Plus } from "lucide-react";
+import { Clock, Users, Hash, TrendingUp, User2, Minus, Plus, Utensils } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, API_BASE_URL } from "@/lib/api";
 import { io, Socket } from "socket.io-client";
+import { MenuView } from "./MenuView";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type QueueEntry = {
   token: string;
@@ -263,6 +271,17 @@ export const QueueSection = () => {
               <Button variant="default" size="lg" className="w-full" onClick={join}>
                 {joining ? "Joining..." : "Join Queue"}
               </Button>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg" className="w-full border-accent text-accent hover:bg-accent/10">
+                    <Utensils className="w-4 h-4 mr-2" /> Browse Menu
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl p-0 overflow-hidden border-none bg-transparent">
+                  <MenuView />
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* Status */}

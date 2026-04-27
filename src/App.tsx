@@ -12,6 +12,7 @@ import Menu from "./pages/Menu.tsx";
 import Queue from "./pages/Queue.tsx";
 import Tables from "./pages/Tables.tsx";
 import Admin from "./pages/Admin.tsx";
+import Analytics from "./pages/Analytics.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -38,6 +39,14 @@ const App = () => (
                 element={
                   <ProtectedRoute role="admin">
                     <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/analytics"
+                element={
+                  <ProtectedRoute role="admin">
+                    <Analytics />
                   </ProtectedRoute>
                 }
               />

@@ -265,10 +265,19 @@ export const AdminDashboard = () => {
   return (
     <section id="admin" className="py-24 bg-gradient-warm">
       <div className="container">
-        <div className="mb-10 animate-slide-up">
-          <p className="text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-3">Admin</p>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-primary">Operations Dashboard</h2>
-          <p className="text-muted-foreground text-lg mt-3">Live queue, table status, and seating actions.</p>
+        <div className="mb-10 animate-slide-up flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div>
+            <p className="text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-3">Admin</p>
+            <h2 className="font-display text-4xl sm:text-5xl font-bold text-primary">Operations Dashboard</h2>
+            <p className="text-muted-foreground text-lg mt-3">Live queue, table status, and seating actions.</p>
+          </div>
+          <Button
+            variant="outline"
+            className="rounded-full px-8 h-12 border-primary/20 hover:bg-primary/5 shadow-soft"
+            onClick={() => window.location.href = "/admin/analytics"}
+          >
+            <TrendingUp className="w-4 h-4 mr-2 text-accent" /> View Analytics
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
