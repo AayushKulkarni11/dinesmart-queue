@@ -10,7 +10,7 @@ export const Footer = () => (
               <UtensilsCrossed className="w-4 h-4 text-accent-foreground" />
             </span>
             <span className="font-display text-xl font-bold">
-              Maison<span className="text-gold">Verde</span>
+              Modern <span className="text-gold">Darbar</span>
             </span>
           </div>
           <p className="text-sm text-primary-foreground/70 leading-relaxed">
@@ -33,9 +33,9 @@ export const Footer = () => (
         <div>
           <h4 className="font-display text-lg font-semibold mb-4 text-accent">Visit Us</h4>
           <ul className="space-y-3 text-sm text-primary-foreground/80">
-            <li className="flex gap-3"><MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent" /> 42 Garden Lane, Old Town, Lisbon 1100-001</li>
-            <li className="flex gap-3"><Phone className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent" /> +351 21 555 0142</li>
-            <li className="flex gap-3"><Clock className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent" /> Mon–Sun · 11am – 11pm</li>
+            <li className="flex gap-3"><MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent" /> JM Road, Pune</li>
+            <li className="flex gap-3"><Phone className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent" /> +91 98765 43210</li>
+            <li className="flex gap-3"><Clock className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent" /> Daily · 10am to 11:30 pm</li>
           </ul>
         </div>
 
@@ -67,7 +67,7 @@ export const Footer = () => (
       </div>
 
       <div className="pt-6 border-t border-primary-foreground/15 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-primary-foreground/60">
-        <p>© {new Date().getFullYear()} MaisonVerde. Crafted with care.</p>
+        <p>© {new Date().getFullYear()} Modern Darbar. Crafted with care.</p>
         <div className="flex gap-5">
           <a href="#" className="hover:text-accent">Privacy</a>
           <a href="#" className="hover:text-accent">Terms</a>

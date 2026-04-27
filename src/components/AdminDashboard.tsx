@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Users, Clock, TrendingUp, Phone, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -31,6 +41,15 @@ type TableItem = {
   } | null;
 };
 
+type ReservationFormState = {
+  status: TableItem["status"];
+  name: string;
+  contactNumber: string;
+  reservationTime: string;
+  partySize: string;
+  notes: string;
+};
+
 type DashboardData = {
   queue: QueueItem[];
   tables: TableItem[];
@@ -49,6 +68,14 @@ const statusBadge: Record<TableItem["status"], string> = {
 };
 
 const queueButtonState = new Set(["Waiting", "Called"]);
+const emptyReservationForm: ReservationFormState = {
+  status: "available",
+  name: "",
+  contactNumber: "",
+  reservationTime: "",
+  partySize: "",
+  notes: "",
+};
 
 export const AdminDashboard = () => {
   const { token, logout } = useAuth();
@@ -56,6 +83,8 @@ export const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [waitInputs, setWaitInputs] = useState<Record<string, string>>({});
+  const [editingTable, setEditingTable] = useState<TableItem | null>(null);
+  const [reservationForm, setReservationForm] = useState<ReservationFormState>(emptyReservationForm);
 
   const stats = useMemo(() => {
     const queue = dashboard?.queue || [];
@@ -133,6 +162,109 @@ export const AdminDashboard = () => {
 
   const queue = dashboard?.queue || [];
   const tables = dashboard?.tables || [];
+
+  const openEditTable = (table: TableItem) => {
+    setEditingTable(table);
+    setReservationForm({
+      status: table.status,
+      name: table.reservation?.name || "",
+      contactNumber: table.reservation?.contactNumber || "",
+      reservationTime: table.reservation?.reservationTime || "",
+      partySize: table.reservation?.partySize ? String(table.reservation.partySize) : "",
+      notes: table.reservation?.notes || "",
+    });
+  };
+
+  const closeEditTable = () => {
+    setEditingTable(null);
+    setReservationForm(emptyReservationForm);
+  };
+
+  const updateReservationForm = (key: keyof ReservationFormState, value: string) => {
+    setReservationForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const bulkUpdateTables = async (
+    status: TableItem["status"],
+    key: string,
+    successMessage: string,
+    successDescription?: string,
+  ) => {
+    await mutate(
+      key,
+      async () => {
+        await Promise.all(
+          tables.map((table) =>
+            apiFetch(`/api/admin/tables/${table._id}/status`, {
+              method: "PUT",
+              token,
+              body: { status },
+            }),
+          ),
+        );
+      },
+      successMessage,
+      successDescription,
+    );
+  };
+
+  const saveTableReservation = async () => {
+    if (!editingTable) return;
+
+    const partySize = Number(reservationForm.partySize);
+    const hasReservationDetails =
+      reservationForm.name.trim() ||
+      reservationForm.contactNumber.trim() ||
+      reservationForm.reservationTime.trim() ||
+      reservationForm.notes.trim() ||
+      reservationForm.partySize.trim();
+
+    if (
+      reservationForm.status === "reserved" &&
+      (
+        !reservationForm.name.trim() ||
+        !reservationForm.contactNumber.trim() ||
+        !reservationForm.reservationTime.trim() ||
+        !Number.isFinite(partySize)
+      )
+    ) {
+      toast.error("Reserved tables need guest name, contact, time, and party size");
+      return;
+    }
+
+    if (reservationForm.partySize.trim()) {
+      if (!Number.isFinite(partySize) || partySize < 1 || partySize > editingTable.capacity) {
+        toast.error(`Party size must be between 1 and ${editingTable.capacity}`);
+        return;
+      }
+    }
+
+    await mutate(
+      `edit-table-${editingTable._id}`,
+      () =>
+        apiFetch(`/api/admin/tables/${editingTable._id}/status`, {
+          method: "PUT",
+          token,
+          body: {
+            status: reservationForm.status,
+            reservation:
+              reservationForm.status === "available" && !hasReservationDetails
+                ? undefined
+                : {
+                    name: reservationForm.name.trim(),
+                    contactNumber: reservationForm.contactNumber.trim(),
+                    reservationTime: reservationForm.reservationTime.trim(),
+                    partySize: reservationForm.partySize.trim() ? partySize : undefined,
+                    notes: reservationForm.notes.trim(),
+                  },
+          },
+        }),
+      `Table ${editingTable.tableNumber} updated`,
+      reservationForm.status === "available" ? "Reservation details cleared" : "Reservation details saved",
+    );
+
+    closeEditTable();
+  };
 
   return (
     <section id="admin" className="py-24 bg-gradient-warm">
@@ -277,7 +409,41 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="bg-card rounded-2xl p-6 shadow-soft border border-border/50">
-            <h3 className="font-display text-2xl font-semibold text-primary mb-5">Table Management</h3>
+            <div className="flex flex-col gap-4 mb-5 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="font-display text-2xl font-semibold text-primary">Table Management</h3>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busyKey === "bulk-occupied" || tables.length === 0}
+                  onClick={() =>
+                    bulkUpdateTables(
+                      "occupied",
+                      "bulk-occupied",
+                      "All tables updated",
+                      "Marked all tables occupied",
+                    )
+                  }
+                >
+                  Occupied All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busyKey === "bulk-available" || tables.length === 0}
+                  onClick={() =>
+                    bulkUpdateTables(
+                      "available",
+                      "bulk-available",
+                      "All tables updated",
+                      "Marked all tables not occupied",
+                    )
+                  }
+                >
+                  Not Occupied All
+                </Button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {tables.map((table) => (
                 <div key={table._id} className="bg-background rounded-xl p-4 border border-border/60">
@@ -334,6 +500,14 @@ export const AdminDashboard = () => {
                       </Button>
                     ))}
                   </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => openEditTable(table)}
+                  >
+                    Edit
+                  </Button>
                 </div>
               ))}
 
@@ -346,6 +520,79 @@ export const AdminDashboard = () => {
           </div>
         </div>
       </div>
+      <Dialog open={Boolean(editingTable)} onOpenChange={(open) => !open && closeEditTable()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingTable ? `Edit Table T${editingTable.tableNumber}` : "Edit Table"}
+            </DialogTitle>
+            <DialogDescription>
+              Update table status and reservation details for the selected table.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="mb-1.5 block text-sm">Status</Label>
+              <select
+                value={reservationForm.status}
+                onChange={(e) => updateReservationForm("status", e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+              >
+                <option value="available">available</option>
+                <option value="reserved">reserved</option>
+                <option value="occupied">occupied</option>
+              </select>
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-sm">Guest Name</Label>
+              <Input value={reservationForm.name} onChange={(e) => updateReservationForm("name", e.target.value)} placeholder="Guest name" />
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-sm">Contact Number</Label>
+              <Input value={reservationForm.contactNumber} onChange={(e) => updateReservationForm("contactNumber", e.target.value)} placeholder="+91 98765 43210" />
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-sm">Reservation Time</Label>
+              <Input value={reservationForm.reservationTime} onChange={(e) => updateReservationForm("reservationTime", e.target.value)} placeholder="2026-04-27 19:30" />
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-sm">
+                Party Size {editingTable ? `(max ${editingTable.capacity})` : ""}
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                max={editingTable?.capacity || 20}
+                value={reservationForm.partySize}
+                onChange={(e) => updateReservationForm("partySize", e.target.value)}
+                placeholder="4"
+              />
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-sm">Notes</Label>
+              <Textarea
+                rows={4}
+                value={reservationForm.notes}
+                onChange={(e) => updateReservationForm("notes", e.target.value)}
+                placeholder="Birthday, window seat, allergy note..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeEditTable}>
+              Cancel
+            </Button>
+            <Button
+              onClick={saveTableReservation}
+              disabled={busyKey === `edit-table-${editingTable?._id || ""}`}
+            >
+              {busyKey === `edit-table-${editingTable?._id || ""}` ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };

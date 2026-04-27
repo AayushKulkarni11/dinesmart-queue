@@ -51,7 +51,7 @@ export const Navbar = () => {
             <UtensilsCrossed className="w-4 h-4 text-accent-foreground" />
           </span>
           <span className="font-display text-xl font-bold text-primary">
-            Maison<span className="text-gold">Verde</span>
+            Modern <span className="text-gold">Darbar</span>
           </span>
         </Link>
 
