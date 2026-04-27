@@ -13,6 +13,7 @@ const testRoutes = require("./routes/testRoutes");
 const authRoutes = require("./routes/authRoutes");
 const queueRoutes = require("./routes/queueRoutes");
 const tablesRoutes = require("./routes/tablesRoutes");
+const paymentsRoutes = require("./routes/paymentsRoutes");
 const { initTables } = require("./utils/initTables");
 const { initSockets } = require("./sockets");
 
@@ -48,6 +49,7 @@ async function start() {
   app.use("/api", authRoutes);
   app.use("/api", queueRoutes);
   app.use("/api", tablesRoutes);
+  app.use("/api", paymentsRoutes);
   app.use("/api", require("./routes/adminRoutes"));
 
   app.use(notFound);
@@ -67,4 +69,3 @@ start().catch((err) => {
   console.error("Fatal startup error:", err);
   process.exit(1);
 });
-

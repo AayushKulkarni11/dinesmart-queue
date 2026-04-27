@@ -18,6 +18,7 @@ async function getDashboard(req, res, next) {
         name: q.name,
         numberOfPeople: q.partySize,
         status: q.status,
+        estimatedWaitMinutes: q.estimatedWaitMinutes ?? null,
         position: index + 1,
         tableAssigned: q.tableId ? q.tableId.tableNumber : null,
       };
@@ -25,11 +26,13 @@ async function getDashboard(req, res, next) {
 
     const tablesAvailable = tables.filter((t) => t.status === "available").length;
     const tablesOccupied = tables.filter((t) => t.status === "occupied").length;
+    const tablesReserved = tables.filter((t) => t.status === "reserved").length;
 
     const summary = {
       totalPeopleWaiting: waitingCount,
       totalTablesAvailable: tablesAvailable,
       totalTablesOccupied: tablesOccupied,
+      totalTablesReserved: tablesReserved,
     };
 
     return res.status(200).json({
@@ -87,6 +90,7 @@ async function seatCustomer(req, res, next) {
     }
 
     queueEntry.status = "Seated";
+    queueEntry.estimatedWaitMinutes = 0;
     await queueEntry.save();
 
     const io = getIO();
@@ -95,6 +99,36 @@ async function seatCustomer(req, res, next) {
     return res.status(200).json({
       success: true,
       message: "Customer seated successfully",
+      data: queueEntry,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+async function updateWaitEstimate(req, res, next) {
+  try {
+    const { id } = req.params;
+    const minutes = Number(req.body?.estimatedWaitMinutes);
+
+    if (!Number.isFinite(minutes) || minutes < 0 || minutes > 600) {
+      return res.status(400).json({ success: false, message: "Estimated wait must be between 0 and 600 minutes", data: null });
+    }
+
+    const queueEntry = await QueueEntry.findById(id);
+    if (!queueEntry) {
+      return res.status(404).json({ success: false, message: "Queue entry not found", data: null });
+    }
+
+    queueEntry.estimatedWaitMinutes = Math.round(minutes);
+    await queueEntry.save();
+
+    const io = getIO();
+    io.emit("queueUpdated");
+
+    return res.status(200).json({
+      success: true,
+      message: "Estimated wait updated successfully",
       data: queueEntry,
     });
   } catch (err) {
@@ -127,7 +161,7 @@ async function removeQueueEntry(req, res, next) {
 async function updateTableStatus(req, res, next) {
   try {
     const { id } = req.params;
-    const { status, queueId } = req.body;
+    const { status, queueId, reservation } = req.body;
 
     if (!["available", "occupied", "reserved"].includes(status)) {
       return res.status(400).json({ success: false, message: "Invalid table status", data: null });
@@ -139,6 +173,11 @@ async function updateTableStatus(req, res, next) {
     }
 
     table.status = status;
+    if (status === "available") {
+      table.reservation = undefined;
+    } else if (reservation && typeof reservation === "object") {
+      table.reservation = reservation;
+    }
     await table.save();
 
     let queueEntry = null;
@@ -173,6 +212,7 @@ module.exports = {
   getDashboard,
   callCustomer,
   seatCustomer,
+  updateWaitEstimate,
   removeQueueEntry,
   updateTableStatus,
 };

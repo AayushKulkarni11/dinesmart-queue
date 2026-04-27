@@ -35,6 +35,7 @@ async function joinQueue(req, res, next) {
           partySize: size,
           preferredTime,
           status: "Waiting",
+          estimatedWaitMinutes: null,
         });
         const { getIO } = require("../sockets");
         try {
@@ -61,7 +62,7 @@ async function listQueue(req, res, next) {
   try {
     const entries = await QueueEntry.find({})
       .sort({ createdAt: 1 })
-      .select("token name partySize preferredTime status createdAt updatedAt");
+      .select("token name partySize preferredTime status estimatedWaitMinutes createdAt updatedAt");
     return res.status(200).json({ success: true, message: "Queue list fetched successfully", data: { entries } });
   } catch (err) {
     return next(err);
@@ -69,4 +70,3 @@ async function listQueue(req, res, next) {
 }
 
 module.exports = { joinQueue, listQueue };
-

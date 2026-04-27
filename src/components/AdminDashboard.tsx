@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Users, Clock, TrendingUp, Phone, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +12,7 @@ type QueueItem = {
   name: string;
   numberOfPeople: number;
   status: "Waiting" | "Called" | "Seated";
+  estimatedWaitMinutes: number | null;
   position: number;
   tableAssigned: number | null;
 };
@@ -20,6 +22,13 @@ type TableItem = {
   tableNumber: number;
   capacity: number;
   status: "available" | "occupied" | "reserved";
+  reservation?: {
+    name?: string;
+    contactNumber?: string;
+    reservationTime?: string;
+    partySize?: number;
+    notes?: string;
+  } | null;
 };
 
 type DashboardData = {
@@ -29,6 +38,7 @@ type DashboardData = {
     totalPeopleWaiting: number;
     totalTablesAvailable: number;
     totalTablesOccupied: number;
+    totalTablesReserved: number;
   };
 };
 
@@ -45,6 +55,7 @@ export const AdminDashboard = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [waitInputs, setWaitInputs] = useState<Record<string, string>>({});
 
   const stats = useMemo(() => {
     const queue = dashboard?.queue || [];
@@ -55,8 +66,8 @@ export const AdminDashboard = () => {
       { label: "People Waiting", value: String(dashboard?.summary.totalPeopleWaiting ?? 0), icon: Users, accent: "text-primary" },
       { label: "Active Queue", value: String(queue.filter((entry) => queueButtonState.has(entry.status)).length), icon: Clock, accent: "text-accent" },
       { label: "Tables Available", value: String(dashboard?.summary.totalTablesAvailable ?? 0), icon: TrendingUp, accent: "text-success" },
+      { label: "Tables Reserved", value: String(dashboard?.summary.totalTablesReserved ?? 0), icon: Phone, accent: "text-warning" },
       { label: "Guests Seated", value: String(seatedCount), icon: Check, accent: "text-accent" },
-      { label: "Total Tables", value: String(tables.length), icon: Users, accent: "text-primary" },
     ];
   }, [dashboard]);
 
@@ -70,6 +81,7 @@ export const AdminDashboard = () => {
         const data = await apiFetch<DashboardData>("/api/admin/dashboard", { token });
         if (!cancelled) {
           setDashboard(data);
+          setWaitInputs(Object.fromEntries(data.queue.map((entry) => [entry.id, String(entry.estimatedWaitMinutes ?? "")])));
         }
       } catch (error) {
         if (error instanceof Error && error.message === "Not authorized") {
@@ -109,6 +121,7 @@ export const AdminDashboard = () => {
       if (!token) return;
       const next = await apiFetch<DashboardData>("/api/admin/dashboard", { token });
       setDashboard(next);
+      setWaitInputs(Object.fromEntries(next.queue.map((entry) => [entry.id, String(entry.estimatedWaitMinutes ?? "")])));
     } catch (error) {
       toast.error("Action failed", {
         description: error instanceof Error ? error.message : "Please try again",
@@ -165,6 +178,45 @@ export const AdminDashboard = () => {
                       <div className="text-muted-foreground text-xs">
                         Party of {entry.numberOfPeople} · Position #{entry.position} · {entry.status}
                         {entry.tableAssigned ? ` · Table ${entry.tableAssigned}` : ""}
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="600"
+                          value={waitInputs[entry.id] ?? ""}
+                          onChange={(e) =>
+                            setWaitInputs((current) => ({
+                              ...current,
+                              [entry.id]: e.target.value,
+                            }))
+                          }
+                          className="h-8 w-24"
+                          placeholder="mins"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={busyKey === `wait-${entry.id}`}
+                          onClick={() =>
+                            mutate(
+                              `wait-${entry.id}`,
+                              () =>
+                                apiFetch(`/api/admin/queue/${entry.id}/wait-estimate`, {
+                                  method: "PUT",
+                                  token,
+                                  body: { estimatedWaitMinutes: Number(waitInputs[entry.id] || 0) },
+                                }),
+                              `${entry.token} wait updated`,
+                              `${waitInputs[entry.id] || 0} minutes`,
+                            )
+                          }
+                        >
+                          Save Wait
+                        </Button>
+                        <span className="text-xs text-muted-foreground">
+                          {entry.estimatedWaitMinutes !== null ? `${entry.estimatedWaitMinutes}m live` : "not set"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -237,6 +289,25 @@ export const AdminDashboard = () => {
                     <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wider ${statusBadge[table.status]}`}>
                       {table.status}
                     </span>
+                  </div>
+                  <div className="space-y-1.5 text-xs text-muted-foreground mb-3 min-h-[72px]">
+                    <div>
+                      Reserved for: <span className="font-medium text-foreground">{table.reservation?.name || "Walk-in / none"}</span>
+                    </div>
+                    <div>
+                      Contact: <span className="font-medium text-foreground">{table.reservation?.contactNumber || "Not set"}</span>
+                    </div>
+                    <div>
+                      Time / party: <span className="font-medium text-foreground">
+                        {table.reservation?.reservationTime || "Not set"}
+                        {table.reservation?.partySize ? ` · ${table.reservation.partySize} guests` : ""}
+                      </span>
+                    </div>
+                    {table.reservation?.notes && (
+                      <div>
+                        Notes: <span className="font-medium text-foreground">{table.reservation.notes}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {(["available", "reserved", "occupied"] as const).map((status) => (

@@ -13,6 +13,7 @@ type QueueEntry = {
   name: string;
   party: number;
   status: "Waiting" | "Called" | "Seated";
+  estimatedWaitMinutes?: number | null;
   you?: boolean;
 };
 
@@ -23,10 +24,12 @@ type ApiQueueEntry = {
   partySize: number;
   preferredTime?: string;
   status: "Waiting" | "Called" | "Seated";
+  estimatedWaitMinutes?: number | null;
   createdAt: string;
 };
 
 const STORAGE_KEY = "dinesmart.queueToken";
+const DEFAULT_WAIT_PER_PARTY_MINUTES = 10;
 
 const statusStyles: Record<QueueEntry["status"], string> = {
   Waiting: "bg-warning/15 text-warning border-warning/30",
@@ -61,6 +64,7 @@ export const QueueSection = () => {
           name: e.token === currentToken ? "You" : e.name,
           party: e.partySize,
           status: e.status,
+          estimatedWaitMinutes: e.estimatedWaitMinutes ?? null,
           you: e.token === currentToken,
         }));
         setQueue(mapped);
@@ -84,9 +88,49 @@ export const QueueSection = () => {
     };
   }, [currentToken]);
 
-  const position = queue.findIndex((q) => q.you) + 1;
-  const totalAhead = Math.max(queue.length, 1);
-  const progressValue = position > 0 ? ((totalAhead - position) / totalAhead) * 100 : 0;
+  const activeQueue = queue.filter((entry) => entry.status !== "Seated");
+  const position = activeQueue.findIndex((entry) => entry.you) + 1;
+  const totalActive = Math.max(activeQueue.length, 1);
+  const progressValue = position > 0 ? ((totalActive - position) / totalActive) * 100 : 0;
+  const currentEntry = activeQueue.find((entry) => entry.you) || null;
+
+  const explicitWaitingEstimates = activeQueue
+    .filter((entry) => entry.status === "Waiting" && typeof entry.estimatedWaitMinutes === "number")
+    .map((entry) => entry.estimatedWaitMinutes as number);
+
+  const fallbackWaitPerParty = explicitWaitingEstimates.length
+    ? Math.max(
+        DEFAULT_WAIT_PER_PARTY_MINUTES,
+        Math.round(explicitWaitingEstimates.reduce((sum, value) => sum + value, 0) / explicitWaitingEstimates.length),
+      )
+    : DEFAULT_WAIT_PER_PARTY_MINUTES;
+
+  const derivedCurrentWait = currentEntry
+    ? currentEntry.status === "Called"
+      ? 0
+      : activeQueue
+          .slice(0, Math.max(position - 1, 0))
+          .filter((entry) => entry.status === "Waiting" || entry.status === "Called").length * fallbackWaitPerParty
+    : null;
+
+  const estimatedWait =
+    currentEntry?.status === "Called"
+      ? 0
+      : currentEntry?.estimatedWaitMinutes ?? derivedCurrentWait;
+
+  const averageWait = activeQueue.filter((entry) => entry.status === "Waiting").length
+    ? Math.round(
+        activeQueue
+          .filter((entry) => entry.status === "Waiting")
+          .reduce((sum, entry, index) => {
+            const effectiveWait =
+              typeof entry.estimatedWaitMinutes === "number"
+                ? entry.estimatedWaitMinutes
+                : index * fallbackWaitPerParty;
+            return sum + effectiveWait;
+          }, 0) / activeQueue.filter((entry) => entry.status === "Waiting").length,
+      )
+    : null;
 
   const join = async () => {
     if (!name.trim()) {
@@ -114,6 +158,7 @@ export const QueueSection = () => {
           name: "You",
           party: data.entry.partySize,
           status: data.entry.status,
+          estimatedWaitMinutes: data.entry.estimatedWaitMinutes ?? null,
           you: true,
         },
       ]);
@@ -211,13 +256,15 @@ export const QueueSection = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                     <Clock className="w-3 h-3" /> Est. Wait
                   </div>
-                  <div className="font-display text-3xl font-bold text-accent">18m</div>
+                  <div className="font-display text-3xl font-bold text-accent">
+                    {estimatedWait !== null ? `${estimatedWait}m` : "--"}
+                  </div>
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-xs text-muted-foreground mb-2">
                   <span>Queue progress</span>
-                  <span>{position > 0 ? `${totalAhead - position}/${totalAhead}` : `0/${totalAhead}`}</span>
+                  <span>{position > 0 ? `${totalActive - position}/${totalActive}` : `0/${totalActive}`}</span>
                 </div>
                 <Progress value={progressValue} className="h-2.5" />
               </div>
@@ -283,7 +330,7 @@ export const QueueSection = () => {
 
             <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
               <TrendingUp className="w-3.5 h-3.5" />
-              Average wait time today: 22 minutes
+              Average wait time today: {averageWait !== null ? `${averageWait} minutes` : "set by admin"}
             </div>
           </div>
         </div>
