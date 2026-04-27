@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,23 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 
-type QueueEntry = { token: string; name: string; party: number; status: "Waiting" | "Called" | "Seated"; you?: boolean };
+type QueueEntry = {
+  token: string;
+  name: string;
+  party: number;
+  status: "Waiting" | "Called" | "Seated";
+  you?: boolean;
+};
+
+type ApiQueueEntry = {
+  _id: string;
+  token: string;
+  name: string;
+  partySize: number;
+  preferredTime?: string;
+  status: "Waiting" | "Called" | "Seated";
+  createdAt: string;
+};
 
 const initialQueue: QueueEntry[] = [
   { token: "A21", name: "Olivia M.", party: 2, status: "Seated" },
@@ -29,17 +45,74 @@ export const QueueSection = () => {
   const [name, setName] = useState(user?.name || "");
   const [people, setPeople] = useState(2);
   const [time, setTime] = useState("19:30");
-  const [position] = useState(4);
-  const totalAhead = 12;
+  const [queue, setQueue] = useState<QueueEntry[]>(initialQueue);
+  const [joining, setJoining] = useState(false);
 
-  const join = () => {
+  const apiBaseUrl = useMemo(() => {
+    const v = (import.meta as any)?.env?.VITE_API_BASE_URL;
+    return typeof v === "string" && v.length ? v : "http://localhost:5056";
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/queue`);
+        if (!res.ok) return;
+        const data = (await res.json()) as { entries?: ApiQueueEntry[] };
+        if (!data?.entries || cancelled) return;
+        const mapped: QueueEntry[] = data.entries.map((e) => ({
+          token: e.token,
+          name: e.name,
+          party: e.partySize,
+          status: e.status,
+        }));
+        setQueue(mapped);
+      } catch {
+        // ignore initial load errors; UI still works with local mock
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBaseUrl]);
+
+  const position = Math.max(1, queue.findIndex((q) => q.you) + 1 || 1);
+  const totalAhead = Math.max(queue.length, 1);
+
+  const join = async () => {
     if (!name.trim()) {
       toast.error("Please enter your name");
       return;
     }
-    toast.success("Successfully joined queue", {
-      description: `Token A27 · ${name} · Party of ${people}`,
-    });
+
+    setJoining(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/queue/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, partySize: people, preferredTime: time }),
+      });
+      const data = (await res.json()) as { entry?: ApiQueueEntry; message?: string };
+      if (!res.ok || !data?.entry) {
+        toast.error("Could not join queue", { description: data?.message || "Please try again" });
+        return;
+      }
+
+      toast.success("Successfully joined queue", {
+        description: `Token ${data.entry.token} · ${data.entry.name} · Party of ${data.entry.partySize}`,
+      });
+
+      setQueue((prev) => [
+        ...prev.map((p) => ({ ...p, you: false, name: p.you ? p.name : p.name })),
+        { token: data.entry.token, name: "You", party: data.entry.partySize, status: data.entry.status, you: true },
+      ]);
+    } catch {
+      toast.error("Could not join queue", { description: "Network error" });
+    } finally {
+      setJoining(false);
+    }
   };
 
   return (
@@ -110,7 +183,7 @@ export const QueueSection = () => {
                 />
               </div>
               <Button variant="default" size="lg" className="w-full" onClick={join}>
-                Join Queue
+                {joining ? "Joining..." : "Join Queue"}
               </Button>
             </div>
 

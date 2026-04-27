@@ -10,6 +10,8 @@ const { getConfig } = require("./config");
 const { notFound } = require("./middleware/notFound");
 const { errorHandler } = require("./middleware/errorHandler");
 const testRoutes = require("./routes/testRoutes");
+const authRoutes = require("./routes/authRoutes");
+const queueRoutes = require("./routes/queueRoutes");
 const { initSockets } = require("./sockets");
 
 async function start() {
@@ -19,9 +21,20 @@ async function start() {
 
   const app = express();
 
+  const allowedOrigins = String(config.corsOrigin || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   app.use(
     cors({
-      origin: config.corsOrigin,
+      origin(origin, callback) {
+        // Allow non-browser clients (no Origin header), like curl/postman
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes("*")) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error("Not allowed by CORS"));
+      },
       credentials: true,
     }),
   );
@@ -29,6 +42,8 @@ async function start() {
   app.use(bodyParser.urlencoded({ extended: true }));
 
   app.use("/api", testRoutes);
+  app.use("/api", authRoutes);
+  app.use("/api", queueRoutes);
 
   app.use(notFound);
   app.use(errorHandler);
