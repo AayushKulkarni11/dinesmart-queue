@@ -50,5 +50,7 @@ function adminOnly(req, res, next) {
   return next();
 }
 
-module.exports = { protect, adminOnly };
+const verifyAdmin = [protect, adminOnly];
+
+module.exports = { protect, adminOnly, verifyAdmin };
 

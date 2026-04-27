@@ -7,6 +7,7 @@ const queueEntrySchema = new mongoose.Schema(
     partySize: { type: Number, required: true, min: 1, max: 20 },
     preferredTime: { type: String, trim: true },
     status: { type: String, enum: ["Waiting", "Called", "Seated"], default: "Waiting" },
+    tableId: { type: mongoose.Schema.Types.ObjectId, ref: "Table" },
   },
   { timestamps: true },
 );

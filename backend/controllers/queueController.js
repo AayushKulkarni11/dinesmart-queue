@@ -36,7 +36,14 @@ async function joinQueue(req, res, next) {
           preferredTime,
           status: "Waiting",
         });
-        return res.status(201).json({ entry });
+        const { getIO } = require("../sockets");
+        try {
+          const io = getIO();
+          io.emit("queueUpdated");
+        } catch (e) {
+          // just ignore if socket not initialized yet for some reason
+        }
+        return res.status(201).json({ success: true, message: "Joined queue successfully", data: { entry } });
       } catch (err) {
         if (err?.code === 11000) continue;
         throw err;
@@ -55,7 +62,7 @@ async function listQueue(req, res, next) {
     const entries = await QueueEntry.find({})
       .sort({ createdAt: 1 })
       .select("token name partySize preferredTime status createdAt updatedAt");
-    return res.status(200).json({ entries });
+    return res.status(200).json({ success: true, message: "Queue list fetched successfully", data: { entries } });
   } catch (err) {
     return next(err);
   }

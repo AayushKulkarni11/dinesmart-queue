@@ -1,5 +1,7 @@
 const { Server } = require("socket.io");
 
+let ioInstance;
+
 function initSockets(httpServer, { corsOrigin = "*" } = {}) {
   const io = new Server(httpServer, {
     cors: {
@@ -14,8 +16,16 @@ function initSockets(httpServer, { corsOrigin = "*" } = {}) {
     });
   });
 
+  ioInstance = io;
   return io;
 }
 
-module.exports = { initSockets };
+function getIO() {
+  if (!ioInstance) {
+    throw new Error("Socket.io not initialized!");
+  }
+  return ioInstance;
+}
+
+module.exports = { initSockets, getIO };
 

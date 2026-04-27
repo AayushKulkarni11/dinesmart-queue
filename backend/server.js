@@ -48,6 +48,7 @@ async function start() {
   app.use("/api", authRoutes);
   app.use("/api", queueRoutes);
   app.use("/api", tablesRoutes);
+  app.use("/api", require("./routes/adminRoutes"));
 
   app.use(notFound);
   app.use(errorHandler);

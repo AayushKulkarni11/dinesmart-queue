@@ -3,7 +3,7 @@ const Table = require("../models/Table");
 async function getTables(req, res, next) {
   try {
     const tables = await Table.find({}).sort({ tableNumber: 1 });
-    return res.status(200).json({ tables });
+    return res.status(200).json({ success: true, message: "Tables fetched successfully", data: { tables } });
   } catch (err) {
     return next(err);
   }
@@ -30,7 +30,15 @@ async function updateTableStatus(req, res, next) {
       return next(new Error("Table not found"));
     }
 
-    return res.status(200).json({ table });
+    const { getIO } = require("../sockets");
+    try {
+      const io = getIO();
+      io.emit("queueUpdated");
+    } catch (e) {
+      // ignore
+    }
+
+    return res.status(200).json({ success: true, message: "Table updated successfully", data: { table } });
   } catch (err) {
     return next(err);
   }

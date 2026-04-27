@@ -60,7 +60,7 @@ async function register(req, res, next) {
       role: "user",
     });
 
-    return res.status(201).json({ user: publicUser(user) });
+    return res.status(201).json({ success: true, message: "Registered successfully", data: { user: publicUser(user) } });
   } catch (err) {
     if (err?.code === 11000) {
       res.status(409);
@@ -97,11 +97,44 @@ async function login(req, res, next) {
     }
 
     const token = signToken(user._id.toString());
-    return res.status(200).json({ token, user: publicUser(user) });
+    return res.status(200).json({ success: true, message: "Logged in successfully", data: { token, user: publicUser(user) } });
   } catch (err) {
     return next(err);
   }
 }
 
-module.exports = { register, login };
+async function adminLogin(req, res, next) {
+  try {
+    const { email, password } = req.body || {};
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Missing required fields", data: null });
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email", data: null });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).select("+password");
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Invalid email or password", data: null });
+    }
+
+    if (user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Admin access required", data: null });
+    }
+
+    const ok = await user.comparePassword(password);
+    if (!ok) {
+      return res.status(401).json({ success: false, message: "Invalid email or password", data: null });
+    }
+
+    const token = signToken(user._id.toString());
+    return res.status(200).json({ success: true, message: "Admin logged in", data: { token, user: publicUser(user) } });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { register, login, adminLogin };
 
