@@ -1,19 +1,15 @@
 import { Navbar } from "@/components/Navbar";
-import { Hero } from "@/components/Hero";
-import { PopularPreview } from "@/components/PopularPreview";
 import { Footer } from "@/components/Footer";
+import { QueueSection } from "@/components/QueueSection";
 
-const Index = () => {
+export default function Queue() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main>
-        <Hero />
-        <PopularPreview />
+      <main className="pt-24">
+        <QueueSection />
       </main>
       <Footer />
     </div>
   );
-};
-
-export default Index;
+}

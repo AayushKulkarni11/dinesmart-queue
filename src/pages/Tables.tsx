@@ -1,19 +1,15 @@
 import { Navbar } from "@/components/Navbar";
-import { Hero } from "@/components/Hero";
-import { PopularPreview } from "@/components/PopularPreview";
 import { Footer } from "@/components/Footer";
+import { TableLayout } from "@/components/TableLayout";
 
-const Index = () => {
+export default function Tables() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main>
-        <Hero />
-        <PopularPreview />
+      <main className="pt-24">
+        <TableLayout />
       </main>
       <Footer />
     </div>
   );
-};
-
-export default Index;
+}
