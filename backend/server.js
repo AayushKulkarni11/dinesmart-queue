@@ -12,12 +12,15 @@ const { errorHandler } = require("./middleware/errorHandler");
 const testRoutes = require("./routes/testRoutes");
 const authRoutes = require("./routes/authRoutes");
 const queueRoutes = require("./routes/queueRoutes");
+const tablesRoutes = require("./routes/tablesRoutes");
+const { initTables } = require("./utils/initTables");
 const { initSockets } = require("./sockets");
 
 async function start() {
   const config = getConfig();
 
   await connectDB();
+  await initTables();
 
   const app = express();
 
@@ -44,6 +47,7 @@ async function start() {
   app.use("/api", testRoutes);
   app.use("/api", authRoutes);
   app.use("/api", queueRoutes);
+  app.use("/api", tablesRoutes);
 
   app.use(notFound);
   app.use(errorHandler);
