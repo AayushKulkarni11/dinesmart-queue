@@ -28,6 +28,25 @@ function publicUser(userDoc) {
 }
 
 async function register(req, res, next) {
+  return createUser(req, res, next, { role: "user" });
+}
+
+async function registerAdmin(req, res, next) {
+  const setupKey = process.env.ADMIN_SETUP_KEY;
+  if (!setupKey) {
+    res.status(500);
+    return next(new Error("Missing required env var: ADMIN_SETUP_KEY"));
+  }
+
+  if (req.body?.setupKey !== setupKey) {
+    res.status(403);
+    return next(new Error("Invalid admin setup key"));
+  }
+
+  return createUser(req, res, next, { role: "admin" });
+}
+
+async function createUser(req, res, next, { role }) {
   try {
     const { name, email, contactNumber, password } = req.body || {};
 
@@ -57,10 +76,16 @@ async function register(req, res, next) {
       email: normalizedEmail,
       contactNumber,
       password,
-      role: "user",
+      role,
     });
 
-    return res.status(201).json({ success: true, message: "Registered successfully", data: { user: publicUser(user) } });
+    const token = signToken(user._id.toString());
+
+    return res.status(201).json({
+      success: true,
+      message: role === "admin" ? "Admin created successfully" : "Registered successfully",
+      data: { token, user: publicUser(user) },
+    });
   } catch (err) {
     if (err?.code === 11000) {
       res.status(409);
@@ -136,5 +161,4 @@ async function adminLogin(req, res, next) {
   }
 }
 
-module.exports = { register, login, adminLogin };
-
+module.exports = { register, registerAdmin, login, adminLogin };

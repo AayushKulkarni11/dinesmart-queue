@@ -14,6 +14,7 @@ async function getDashboard(req, res, next) {
       }
       return {
         id: q._id,
+        token: q.token,
         name: q.name,
         numberOfPeople: q.partySize,
         status: q.status,

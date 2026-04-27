@@ -7,13 +7,26 @@ import { Mail, Lock, UtensilsCrossed, User2, Phone, ShieldCheck } from "lucide-r
 import { toast } from "sonner";
 import { useAuth, Role } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 import heroImage from "@/assets/hero-restaurant.jpg";
+
+type AuthPayload = {
+  token: string;
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+    contactNumber: string;
+    role: Role;
+  };
+};
 
 export default function Signup() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [role, setRole] = useState<Role>("user");
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", setupKey: "" });
+  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = (k: keyof typeof form, v: string) => setForm((s) => ({ ...s, [k]: v }));
@@ -23,17 +36,38 @@ export default function Signup() {
     if (form.name.trim().length < 2) e.name = "Please enter your full name";
     if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = "Enter a valid email address";
     if (!/^\+?[\d\s-]{7,15}$/.test(form.phone)) e.phone = "Enter a valid contact number";
-    if (form.password.length < 6) e.password = "Password must be at least 6 characters";
+    if (form.password.length < 8) e.password = "Password must be at least 8 characters";
+    if (role === "admin" && !form.setupKey.trim()) e.setupKey = "Admin setup key is required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const onSubmit = (ev: React.FormEvent) => {
+  const onSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
-    login({ name: form.name, email: form.email, phone: form.phone, role });
-    toast.success("Account created!", { description: `Welcome, ${form.name}` });
-    navigate(role === "admin" ? "/admin" : "/", { replace: true });
+    setSubmitting(true);
+    try {
+      const data = await apiFetch<AuthPayload>(role === "admin" ? "/api/auth/register-admin" : "/api/auth/register", {
+        method: "POST",
+        body: {
+          name: form.name,
+          email: form.email,
+          contactNumber: form.phone,
+          password: form.password,
+          ...(role === "admin" ? { setupKey: form.setupKey } : {}),
+        },
+      });
+
+      login(data);
+      toast.success("Account created!", { description: `Welcome, ${data.user.name}` });
+      navigate(data.user.role === "admin" ? "/admin" : "/", { replace: true });
+    } catch (error) {
+      toast.error("Could not create account", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -134,12 +168,24 @@ export default function Signup() {
                 icon={<Lock className="w-3.5 h-3.5 text-accent" />}
                 value={form.password}
                 onChange={(v) => set("password", v)}
-                placeholder="At least 6 characters"
+                placeholder="At least 8 characters"
                 error={errors.password}
               />
+              {role === "admin" && (
+                <Field
+                  id="setupKey"
+                  label="Admin Setup Key"
+                  type="password"
+                  icon={<ShieldCheck className="w-3.5 h-3.5 text-accent" />}
+                  value={form.setupKey}
+                  onChange={(v) => set("setupKey", v)}
+                  placeholder="Provided by the server owner"
+                  error={errors.setupKey}
+                />
+              )}
 
-              <Button type="submit" variant="default" size="lg" className="w-full mt-2">
-                Create Account
+              <Button type="submit" variant="default" size="lg" className="w-full mt-2" disabled={submitting}>
+                {submitting ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 

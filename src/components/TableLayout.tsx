@@ -1,21 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
 type Status = "available" | "occupied" | "reserved";
-type Table = { id: number; seats: number; status: Status };
-
-// Deterministic generator for 30 tables with mixed seat sizes & statuses
-const generateTables = (): Table[] => {
-  const seatPool = [2, 2, 4, 4, 4, 6, 8];
-  const statusCycle: Status[] = ["available", "available", "occupied", "reserved", "available", "occupied"];
-  return Array.from({ length: 30 }, (_, i) => ({
-    id: i + 1,
-    seats: seatPool[i % seatPool.length],
-    status: statusCycle[i % statusCycle.length],
-  }));
-};
+type Table = { id: string; tableNumber: number; seats: number; status: Status };
 
 const statusColor: Record<Status, string> = {
   available: "bg-success/85 hover:bg-success border-success text-white",
@@ -31,7 +21,8 @@ const statusLabel: Record<Status, string> = {
 
 export const TableLayout = () => {
   const [selected, setSelected] = useState<number | null>(null);
-  const [tables, setTables] = useState<Table[]>(generateTables);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const counts = useMemo(
     () => ({
@@ -42,15 +33,64 @@ export const TableLayout = () => {
     [tables]
   );
 
-  const handleClick = (t: Table) => {
-    setSelected(t.id);
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async (silent = false) => {
+      try {
+        const data = await apiFetch<{
+          tables: Array<{ _id: string; tableNumber: number; capacity: number; status: Status }>;
+        }>("/api/tables");
+        if (cancelled) return;
+        setTables(
+          data.tables.map((table) => ({
+            id: table._id,
+            tableNumber: table.tableNumber,
+            seats: table.capacity,
+            status: table.status,
+          })),
+        );
+      } catch (error) {
+        if (!silent) {
+          toast.error("Could not load tables", {
+            description: error instanceof Error ? error.message : "Please try again",
+          });
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    const interval = window.setInterval(() => {
+      load(true);
+    }, 15000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const handleClick = async (t: Table) => {
+    setSelected(t.tableNumber);
     if (t.status === "available") {
-      setTables((curr) =>
-        curr.map((x) => (x.id === t.id ? { ...x, status: "reserved" } : x))
-      );
-      toast.success(`Table ${t.id} reserved`, { description: `${t.seats} seats` });
+      try {
+        await apiFetch<{ table: { _id: string; status: Status } }>(`/api/tables/${t.id}/status`, {
+          method: "PUT",
+          body: { status: "reserved" },
+        });
+        setTables((curr) =>
+          curr.map((x) => (x.id === t.id ? { ...x, status: "reserved" } : x)),
+        );
+        toast.success(`Table ${t.tableNumber} reserved`, { description: `${t.seats} seats` });
+      } catch (error) {
+        toast.error("Could not reserve table", {
+          description: error instanceof Error ? error.message : "Please try again",
+        });
+      }
     } else {
-      toast.error(`Table ${t.id} is ${statusLabel[t.status].toLowerCase()}`);
+      toast.error(`Table ${t.tableNumber} is ${statusLabel[t.status].toLowerCase()}`);
     }
   };
 
@@ -95,21 +135,26 @@ export const TableLayout = () => {
                         className={cn(
                           "relative aspect-square border-2 grid place-items-center rounded-xl shadow-soft transition-all duration-300 hover:scale-110 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                           statusColor[t.status],
-                          selected === t.id && "ring-4 ring-accent ring-offset-2 ring-offset-card"
+                          selected === t.tableNumber && "ring-4 ring-accent ring-offset-2 ring-offset-card"
                         )}
-                        aria-label={`Table ${t.id}, ${t.seats} seats, ${statusLabel[t.status]}`}
+                        aria-label={`Table ${t.tableNumber}, ${t.seats} seats, ${statusLabel[t.status]}`}
                       >
                         <div className="text-center leading-tight">
-                          <div className="font-display text-base sm:text-lg font-bold">T{t.id}</div>
+                          <div className="font-display text-base sm:text-lg font-bold">T{t.tableNumber}</div>
                           <div className="text-[10px] opacity-90">{t.seats} seats</div>
                         </div>
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="font-medium">
-                      Table {t.id} – Seats {t.seats} – {statusLabel[t.status]}
+                      Table {t.tableNumber} - Seats {t.seats} - {statusLabel[t.status]}
                     </TooltipContent>
                   </Tooltip>
                 ))}
+                {!loading && tables.length === 0 && (
+                  <div className="col-span-full rounded-2xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">
+                    No table data available right now.
+                  </div>
+                )}
               </div>
             </div>
           </TooltipProvider>

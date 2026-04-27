@@ -1,38 +1,68 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, ReactNode } from "react";
 
 export type Role = "user" | "admin";
-export type AuthUser = { name: string; email: string; phone: string; role: Role };
+export type AuthUser = {
+  _id: string;
+  name: string;
+  email: string;
+  contactNumber: string;
+  role: Role;
+};
+
+type AuthSession = {
+  token: string;
+  user: AuthUser;
+};
 
 type AuthContextValue = {
   user: AuthUser | null;
-  login: (u: AuthUser) => void;
+  token: string | null;
+  login: (session: AuthSession) => void;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-const STORAGE_KEY = "maisonverde.auth";
+const STORAGE_KEY = "dinesmart.auth";
+
+function readStoredSession(): AuthSession | null {
+  if (typeof window === "undefined") return null;
+
+  const raw = window.localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<AuthSession>;
+    if (!parsed?.token || !parsed?.user) return null;
+    return parsed as AuthSession;
+  } catch {
+    return null;
+  }
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(() => readStoredSession());
 
-  useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try { setUser(JSON.parse(raw)); } catch { /* ignore */ }
-    }
-  }, []);
-
-  const login = (u: AuthUser) => {
-    setUser(u);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+  const login = (nextSession: AuthSession) => {
+    setSession(nextSession);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
+    setSession(null);
+    window.localStorage.removeItem(STORAGE_KEY);
   };
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user: session?.user || null,
+      token: session?.token || null,
+      login,
+      logout,
+    }),
+    [session],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

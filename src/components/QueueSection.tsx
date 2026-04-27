@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,7 @@ import { Clock, Users, Hash, TrendingUp, User2, Minus, Plus } from "lucide-react
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/api";
 
 type QueueEntry = {
   token: string;
@@ -25,14 +26,7 @@ type ApiQueueEntry = {
   createdAt: string;
 };
 
-const initialQueue: QueueEntry[] = [
-  { token: "A21", name: "Olivia M.", party: 2, status: "Seated" },
-  { token: "A22", name: "Lucas R.", party: 4, status: "Called" },
-  { token: "A23", name: "Sophia K.", party: 3, status: "Waiting" },
-  { token: "A24", name: "You", party: 2, status: "Waiting", you: true },
-  { token: "A25", name: "Ethan T.", party: 5, status: "Waiting" },
-  { token: "A26", name: "Mia L.", party: 2, status: "Waiting" },
-];
+const STORAGE_KEY = "dinesmart.queueToken";
 
 const statusStyles: Record<QueueEntry["status"], string> = {
   Waiting: "bg-warning/15 text-warning border-warning/30",
@@ -45,41 +39,54 @@ export const QueueSection = () => {
   const [name, setName] = useState(user?.name || "");
   const [people, setPeople] = useState(2);
   const [time, setTime] = useState("19:30");
-  const [queue, setQueue] = useState<QueueEntry[]>(initialQueue);
+  const [queue, setQueue] = useState<QueueEntry[]>([]);
   const [joining, setJoining] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [currentToken, setCurrentToken] = useState<string | null>(() => window.localStorage.getItem(STORAGE_KEY));
 
-  const apiBaseUrl = useMemo(() => {
-    const v = (import.meta as any)?.env?.VITE_API_BASE_URL;
-    return typeof v === "string" && v.length ? v : "http://localhost:5056";
-  }, []);
+  useEffect(() => {
+    if (user?.name) {
+      setName(user.name);
+    }
+  }, [user?.name]);
 
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
+    const load = async (silent = false) => {
       try {
-        const res = await fetch(`${apiBaseUrl}/api/queue`);
-        if (!res.ok) return;
-        const data = (await res.json()) as { entries?: ApiQueueEntry[] };
-        if (!data?.entries || cancelled) return;
+        const data = await apiFetch<{ entries: ApiQueueEntry[] }>("/api/queue");
+        if (cancelled) return;
         const mapped: QueueEntry[] = data.entries.map((e) => ({
           token: e.token,
-          name: e.name,
+          name: e.token === currentToken ? "You" : e.name,
           party: e.partySize,
           status: e.status,
+          you: e.token === currentToken,
         }));
         setQueue(mapped);
-      } catch {
-        // ignore initial load errors; UI still works with local mock
+      } catch (error) {
+        if (!silent) {
+          toast.error("Could not load queue", {
+            description: error instanceof Error ? error.message : "Please try again",
+          });
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
     load();
+    const interval = window.setInterval(() => {
+      load(true);
+    }, 15000);
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
     };
-  }, [apiBaseUrl]);
+  }, [currentToken]);
 
-  const position = Math.max(1, queue.findIndex((q) => q.you) + 1 || 1);
+  const position = queue.findIndex((q) => q.you) + 1;
   const totalAhead = Math.max(queue.length, 1);
+  const progressValue = position > 0 ? ((totalAhead - position) / totalAhead) * 100 : 0;
 
   const join = async () => {
     if (!name.trim()) {
@@ -89,27 +96,31 @@ export const QueueSection = () => {
 
     setJoining(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/queue/join`, {
+      const data = await apiFetch<{ entry: ApiQueueEntry }>("/api/queue/join", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, partySize: people, preferredTime: time }),
+        body: { name, partySize: people, preferredTime: time },
       });
-      const data = (await res.json()) as { entry?: ApiQueueEntry; message?: string };
-      if (!res.ok || !data?.entry) {
-        toast.error("Could not join queue", { description: data?.message || "Please try again" });
-        return;
-      }
 
+      window.localStorage.setItem(STORAGE_KEY, data.entry.token);
+      setCurrentToken(data.entry.token);
       toast.success("Successfully joined queue", {
         description: `Token ${data.entry.token} · ${data.entry.name} · Party of ${data.entry.partySize}`,
       });
 
       setQueue((prev) => [
-        ...prev.map((p) => ({ ...p, you: false, name: p.you ? p.name : p.name })),
-        { token: data.entry.token, name: "You", party: data.entry.partySize, status: data.entry.status, you: true },
+        ...prev.map((entry) => ({ ...entry, you: false })),
+        {
+          token: data.entry.token,
+          name: "You",
+          party: data.entry.partySize,
+          status: data.entry.status,
+          you: true,
+        },
       ]);
-    } catch {
-      toast.error("Could not join queue", { description: "Network error" });
+    } catch (error) {
+      toast.error("Could not join queue", {
+        description: error instanceof Error ? error.message : "Network error",
+      });
     } finally {
       setJoining(false);
     }
@@ -194,7 +205,7 @@ export const QueueSection = () => {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                     <Hash className="w-3 h-3" /> Position
                   </div>
-                  <div className="font-display text-3xl font-bold text-primary">#{position}</div>
+                  <div className="font-display text-3xl font-bold text-primary">{position > 0 ? `#${position}` : "--"}</div>
                 </div>
                 <div className="bg-background rounded-xl p-4 border border-border/60">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -206,9 +217,9 @@ export const QueueSection = () => {
               <div>
                 <div className="flex justify-between text-xs text-muted-foreground mb-2">
                   <span>Queue progress</span>
-                  <span>{totalAhead - position}/{totalAhead}</span>
+                  <span>{position > 0 ? `${totalAhead - position}/${totalAhead}` : `0/${totalAhead}`}</span>
                 </div>
-                <Progress value={((totalAhead - position) / totalAhead) * 100} className="h-2.5" />
+                <Progress value={progressValue} className="h-2.5" />
               </div>
             </div>
           </div>
@@ -233,7 +244,7 @@ export const QueueSection = () => {
                 <div className="col-span-2">Party</div>
                 <div className="col-span-4">Status</div>
               </div>
-              {initialQueue.map((entry, i) => (
+              {queue.map((entry, i) => (
                 <div
                   key={entry.token}
                   className={`grid grid-cols-12 gap-3 items-center px-4 py-4 rounded-xl border transition-all animate-fade-in ${
@@ -263,6 +274,11 @@ export const QueueSection = () => {
                   </div>
                 </div>
               ))}
+              {!loading && queue.length === 0 && (
+                <div className="px-4 py-8 text-sm text-muted-foreground text-center rounded-xl border border-dashed border-border/60">
+                  The queue is currently empty.
+                </div>
+              )}
             </div>
 
             <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">

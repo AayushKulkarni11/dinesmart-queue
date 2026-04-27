@@ -7,7 +7,19 @@ import { Mail, Lock, UtensilsCrossed, ShieldCheck, User2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth, Role } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 import heroImage from "@/assets/hero-restaurant.jpg";
+
+type AuthPayload = {
+  token: string;
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+    contactNumber: string;
+    role: Role;
+  };
+};
 
 export default function Login() {
   const { login } = useAuth();
@@ -16,6 +28,7 @@ export default function Login() {
   const [role, setRole] = useState<Role>("user");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const validate = () => {
@@ -26,18 +39,26 @@ export default function Login() {
     return Object.keys(e).length === 0;
   };
 
-  const onSubmit = (ev: React.FormEvent) => {
+  const onSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
-    login({
-      name: role === "admin" ? "Admin" : email.split("@")[0],
-      email,
-      phone: "",
-      role,
-    });
-    toast.success(`Welcome back!`, { description: `Signed in as ${role}` });
-    const dest = role === "admin" ? "/admin" : location.state?.from || "/";
-    navigate(dest, { replace: true });
+    setSubmitting(true);
+    try {
+      const data = await apiFetch<AuthPayload>(role === "admin" ? "/api/auth/admin-login" : "/api/auth/login", {
+        method: "POST",
+        body: { email, password },
+      });
+      login(data);
+      toast.success("Welcome back!", { description: `Signed in as ${data.user.role}` });
+      const dest = data.user.role === "admin" ? "/admin" : location.state?.from || "/";
+      navigate(dest, { replace: true });
+    } catch (error) {
+      toast.error("Could not sign in", {
+        description: error instanceof Error ? error.message : "Please try again",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -136,8 +157,8 @@ export default function Login() {
                 {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
               </div>
 
-              <Button type="submit" variant="default" size="lg" className="w-full mt-2">
-                Sign In as {role === "admin" ? "Admin" : "User"}
+              <Button type="submit" variant="default" size="lg" className="w-full mt-2" disabled={submitting}>
+                {submitting ? "Signing In..." : `Sign In as ${role === "admin" ? "Admin" : "User"}`}
               </Button>
             </form>
 
