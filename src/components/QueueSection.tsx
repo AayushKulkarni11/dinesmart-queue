@@ -2,19 +2,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, Users, Hash, TrendingUp } from "lucide-react";
+import { Clock, Users, Hash, TrendingUp, User2, Minus, Plus } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
-type QueueEntry = { token: string; party: number; status: "Waiting" | "Called" | "Seated"; you?: boolean };
+type QueueEntry = { token: string; name: string; party: number; status: "Waiting" | "Called" | "Seated"; you?: boolean };
 
 const initialQueue: QueueEntry[] = [
-  { token: "A21", party: 2, status: "Seated" },
-  { token: "A22", party: 4, status: "Called" },
-  { token: "A23", party: 3, status: "Waiting" },
-  { token: "A24", party: 2, status: "Waiting", you: true },
-  { token: "A25", party: 5, status: "Waiting" },
-  { token: "A26", party: 2, status: "Waiting" },
+  { token: "A21", name: "Olivia M.", party: 2, status: "Seated" },
+  { token: "A22", name: "Lucas R.", party: 4, status: "Called" },
+  { token: "A23", name: "Sophia K.", party: 3, status: "Waiting" },
+  { token: "A24", name: "You", party: 2, status: "Waiting", you: true },
+  { token: "A25", name: "Ethan T.", party: 5, status: "Waiting" },
+  { token: "A26", name: "Mia L.", party: 2, status: "Waiting" },
 ];
 
 const statusStyles: Record<QueueEntry["status"], string> = {
@@ -24,10 +25,22 @@ const statusStyles: Record<QueueEntry["status"], string> = {
 };
 
 export const QueueSection = () => {
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name || "");
   const [people, setPeople] = useState(2);
   const [time, setTime] = useState("19:30");
   const [position] = useState(4);
   const totalAhead = 12;
+
+  const join = () => {
+    if (!name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    toast.success("Successfully joined queue", {
+      description: `Token A27 · ${name} · Party of ${people}`,
+    });
+  };
 
   return (
     <section id="queue" className="py-24 bg-background">
@@ -48,18 +61,41 @@ export const QueueSection = () => {
             <h3 className="font-display text-2xl font-semibold text-primary mb-6">Join the Queue</h3>
             <div className="space-y-5">
               <div>
-                <Label htmlFor="people" className="mb-2 flex items-center gap-2 text-sm">
-                  <Users className="w-4 h-4 text-accent" /> Number of People
+                <Label htmlFor="qname" className="mb-2 flex items-center gap-2 text-sm">
+                  <User2 className="w-4 h-4 text-accent" /> Your Name
                 </Label>
                 <Input
-                  id="people"
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={people}
-                  onChange={(e) => setPeople(Number(e.target.value))}
+                  id="qname"
+                  type="text"
+                  placeholder="e.g. Alex Carter"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="bg-background h-12"
                 />
+              </div>
+              <div>
+                <Label className="mb-2 flex items-center gap-2 text-sm">
+                  <Users className="w-4 h-4 text-accent" /> Number of People
+                </Label>
+                <div className="inline-flex items-center bg-background rounded-xl border border-border/60 p-1 w-full justify-between h-12">
+                  <button
+                    type="button"
+                    onClick={() => setPeople((p) => Math.max(1, p - 1))}
+                    className="w-10 h-10 grid place-items-center rounded-lg hover:bg-accent/15 transition-colors"
+                    aria-label="Decrease"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="font-display text-2xl font-bold text-primary w-10 text-center">{people}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPeople((p) => Math.min(20, p + 1))}
+                    className="w-10 h-10 grid place-items-center rounded-lg hover:bg-accent/15 transition-colors"
+                    aria-label="Increase"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div>
                 <Label htmlFor="time" className="mb-2 flex items-center gap-2 text-sm">
@@ -73,12 +109,7 @@ export const QueueSection = () => {
                   className="bg-background h-12"
                 />
               </div>
-              <Button
-                variant="default"
-                size="lg"
-                className="w-full"
-                onClick={() => toast.success("Successfully joined queue", { description: `Token A27 · Party of ${people}` })}
-              >
+              <Button variant="default" size="lg" className="w-full" onClick={join}>
                 Join Queue
               </Button>
             </div>
@@ -124,28 +155,34 @@ export const QueueSection = () => {
 
             <div className="space-y-2">
               <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                <div className="col-span-3">Token</div>
-                <div className="col-span-3">Party</div>
-                <div className="col-span-6">Status</div>
+                <div className="col-span-2">Token</div>
+                <div className="col-span-4">Name</div>
+                <div className="col-span-2">Party</div>
+                <div className="col-span-4">Status</div>
               </div>
               {initialQueue.map((entry, i) => (
                 <div
                   key={entry.token}
                   className={`grid grid-cols-12 gap-3 items-center px-4 py-4 rounded-xl border transition-all animate-fade-in ${
                     entry.you
-                      ? "bg-accent-soft border-accent shadow-soft ring-1 ring-accent/40"
+                      ? "bg-accent-soft border-accent shadow-soft ring-2 ring-accent/40 scale-[1.01]"
                       : "bg-background border-border/50 hover:border-border"
                   }`}
                   style={{ animationDelay: `${i * 50}ms` }}
                 >
-                  <div className="col-span-3 font-display text-lg font-bold text-primary">
-                    {entry.token}
-                    {entry.you && <span className="ml-2 text-xs font-sans text-accent">YOU</span>}
+                  <div className="col-span-2 font-display text-lg font-bold text-primary">{entry.token}</div>
+                  <div className="col-span-4 flex items-center gap-2 text-sm font-medium">
+                    {entry.name}
+                    {entry.you && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-accent text-accent-foreground">
+                        You
+                      </span>
+                    )}
                   </div>
-                  <div className="col-span-3 flex items-center gap-1.5 text-sm">
+                  <div className="col-span-2 flex items-center gap-1.5 text-sm">
                     <Users className="w-3.5 h-3.5 text-muted-foreground" /> {entry.party}
                   </div>
-                  <div className="col-span-6">
+                  <div className="col-span-4">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${statusStyles[entry.status]}`}>
                       <span className="w-1.5 h-1.5 rounded-full bg-current" />
                       {entry.status}

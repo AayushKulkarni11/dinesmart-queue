@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-restaurant.jpg";
@@ -35,13 +36,13 @@ export const Hero = () => (
 
         <div className="flex flex-wrap gap-3">
           <Button variant="hero" size="xl" asChild>
-            <a href="#menu">View Menu <ArrowRight className="w-4 h-4" /></a>
+            <Link to="/menu">View Menu <ArrowRight className="w-4 h-4" /></Link>
           </Button>
           <Button variant="glass" size="xl" asChild>
-            <a href="#queue">Join Queue</a>
+            <Link to="/queue">Join Queue</Link>
           </Button>
           <Button variant="glass" size="xl" asChild>
-            <a href="#tables">Book Table</a>
+            <Link to="/tables">Book Table</Link>
           </Button>
         </div>
 
