@@ -1,0 +1,2 @@
+# This repository is a Node/Vite project (see package.json).
+# Python dependencies are not used here.
