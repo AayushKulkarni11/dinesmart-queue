@@ -4,9 +4,9 @@ import { TableLayout } from "@/components/TableLayout";
 
 export default function Tables() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       <Navbar />
-      <main className="pt-24">
+      <main className="pt-16 sm:pt-20 pb-12 md:pb-16">
         <TableLayout />
       </main>
       <Footer />

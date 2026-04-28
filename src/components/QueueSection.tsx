@@ -202,23 +202,23 @@ export const QueueSection = () => {
   };
 
   return (
-    <section id="queue" className="py-24 bg-background">
+    <section id="queue" className="py-10 md:py-16 bg-background">
       <div className="container">
-        <div className="text-center max-w-2xl mx-auto mb-12 animate-slide-up">
-          <p className="text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-3">Live Queue</p>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-primary mb-4">
+        <div className="text-center max-w-2xl mx-auto mb-6 md:mb-8 animate-slide-up">
+          <p className="text-xs sm:text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-2 sm:mb-3">Live Queue</p>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-3 sm:mb-4">
             Reserve your spot in seconds
           </h2>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm sm:text-lg">
             No more standing in line. Track your position and arrive right on time.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-5 gap-6">
+        <div className="grid lg:grid-cols-5 gap-4 sm:gap-6">
           {/* Booking card */}
-          <div className="lg:col-span-2 bg-gradient-card rounded-2xl p-7 shadow-elegant border border-border/50">
-            <h3 className="font-display text-2xl font-semibold text-primary mb-6">Join the Queue</h3>
-            <div className="space-y-5">
+          <div className="lg:col-span-2 bg-gradient-card rounded-2xl p-5 sm:p-6 md:p-7 shadow-elegant border border-border/50">
+            <h3 className="font-display text-xl sm:text-2xl font-semibold text-primary mb-4 sm:mb-6">Join the Queue</h3>
+            <div className="space-y-4">
               <div>
                 <Label htmlFor="qname" className="mb-2 flex items-center gap-2 text-sm">
                   <User2 className="w-4 h-4 text-accent" /> Your Name
@@ -285,38 +285,38 @@ export const QueueSection = () => {
             </div>
 
             {/* Status */}
-            <div className="mt-7 pt-6 border-t border-border space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-background rounded-xl p-4 border border-border/60">
+            <div className="mt-5 pt-4 sm:pt-5 border-t border-border space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="bg-background rounded-xl p-3 sm:p-4 border border-border/60">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                     <Hash className="w-3 h-3" /> Position
                   </div>
-                  <div className="font-display text-3xl font-bold text-primary">{position > 0 ? `#${position}` : "--"}</div>
+                  <div className="font-display text-2xl sm:text-3xl font-bold text-primary">{position > 0 ? `#${position}` : "--"}</div>
                 </div>
-                <div className="bg-background rounded-xl p-4 border border-border/60">
+                <div className="bg-background rounded-xl p-3 sm:p-4 border border-border/60">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                     <Clock className="w-3 h-3" /> Est. Wait
                   </div>
-                  <div className="font-display text-3xl font-bold text-accent">
+                  <div className="font-display text-2xl sm:text-3xl font-bold text-accent">
                     {estimatedWait !== null ? `${estimatedWait}m` : "--"}
                   </div>
                 </div>
               </div>
               <div>
-                <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
                   <span>Queue progress</span>
                   <span>{position > 0 ? `${totalActive - position}/${totalActive}` : `0/${totalActive}`}</span>
                 </div>
-                <Progress value={progressValue} className="h-2.5" />
+                <Progress value={progressValue} className="h-2" />
               </div>
             </div>
           </div>
 
           {/* Live list */}
-          <div className="lg:col-span-3 bg-card rounded-2xl p-7 shadow-soft border border-border/50">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-display text-2xl font-semibold text-primary">Live Queue Status</h3>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="lg:col-span-3 bg-card rounded-2xl p-4 sm:p-5 md:p-6 shadow-soft border border-border/50">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h3 className="font-display text-xl sm:text-2xl font-semibold text-primary">Live Queue Status</h3>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                 <span className="relative flex w-2 h-2">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-75 animate-ping" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
@@ -332,44 +332,44 @@ export const QueueSection = () => {
                 <div className="col-span-2">Party</div>
                 <div className="col-span-4">Status</div>
               </div>
-              {queue.map((entry, i) => (
-                <div
-                  key={entry.token}
-                  className={`grid grid-cols-12 gap-3 items-center px-4 py-4 rounded-xl border transition-all animate-fade-in ${
-                    entry.you
-                      ? "bg-accent-soft border-accent shadow-soft ring-2 ring-accent/40 scale-[1.01]"
-                      : "bg-background border-border/50 hover:border-border"
-                  }`}
-                  style={{ animationDelay: `${i * 50}ms` }}
-                >
-                  <div className="col-span-2 font-display text-lg font-bold text-primary">{entry.token}</div>
-                  <div className="col-span-4 flex items-center gap-2 text-sm font-medium">
-                    {entry.name}
-                    {entry.you && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-accent text-accent-foreground">
-                        You
-                      </span>
-                    )}
-                  </div>
-                  <div className="col-span-2 flex items-center gap-1.5 text-sm">
-                    <Users className="w-3.5 h-3.5 text-muted-foreground" /> {entry.party}
-                  </div>
-                  <div className="col-span-4">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${statusStyles[entry.status]}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                      {entry.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {!loading && queue.length === 0 && (
-                <div className="px-4 py-8 text-sm text-muted-foreground text-center rounded-xl border border-dashed border-border/60">
-                  The queue is currently empty.
-                </div>
-              )}
-            </div>
+               {queue.map((entry, i) => (
+                 <div
+                   key={entry.token}
+                   className={`grid grid-cols-12 gap-2 sm:gap-3 items-center px-3 sm:px-4 py-3 rounded-xl border transition-all animate-fade-in ${
+                     entry.you
+                       ? "bg-accent-soft border-accent shadow-soft ring-2 ring-accent/40 scale-[1.01]"
+                       : "bg-background border-border/50 hover:border-border"
+                   }`}
+                   style={{ animationDelay: `${i * 50}ms` }}
+                 >
+                   <div className="col-span-2 font-display text-lg sm:text-xl font-bold text-primary">{entry.token}</div>
+                   <div className="col-span-4 flex items-center gap-2 text-xs sm:text-sm font-medium">
+                     {entry.name}
+                     {entry.you && (
+                       <span className="text-[10px] font-bold uppercase tracking-wider px-1 py-0.5 rounded-md bg-accent text-accent-foreground">
+                         You
+                       </span>
+                     )}
+                   </div>
+                   <div className="col-span-2 flex items-center gap-1.5 text-xs sm:text-sm">
+                     <Users className="w-3.5 h-3.5 text-muted-foreground" /> {entry.party}
+                   </div>
+                   <div className="col-span-4">
+                     <span className={`inline-flex items-center gap-1 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium border ${statusStyles[entry.status]}`}>
+                       <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-current" />
+                       {entry.status}
+                     </span>
+                   </div>
+                 </div>
+               ))}
+               {!loading && queue.length === 0 && (
+                 <div className="px-4 py-6 text-sm text-muted-foreground text-center rounded-xl border border-dashed border-border/60">
+                   The queue is currently empty.
+                 </div>
+               )}
+             </div>
 
-            <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
+             <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
               <TrendingUp className="w-3.5 h-3.5" />
               Average wait time today: {averageWait !== null ? `${averageWait} minutes` : "set by admin"}
             </div>

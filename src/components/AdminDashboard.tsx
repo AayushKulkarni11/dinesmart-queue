@@ -263,28 +263,28 @@ export const AdminDashboard = () => {
   };
 
   return (
-    <section id="admin" className="py-24 bg-gradient-warm">
+    <section id="admin" className="py-8 md:py-12 bg-gradient-warm">
       <div className="container">
-        <div className="mb-10 animate-slide-up flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div className="mb-6 md:mb-8 animate-slide-up flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-3">Admin</p>
-            <h2 className="font-display text-4xl sm:text-5xl font-bold text-primary">Operations Dashboard</h2>
-            <p className="text-muted-foreground text-lg mt-3">Live queue, table status, and seating actions.</p>
+            <p className="text-xs sm:text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-2 sm:mb-3">Admin</p>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">Operations Dashboard</h2>
+            <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-3">Live queue, table status, and seating actions.</p>
           </div>
           <Button
             variant="outline"
-            className="rounded-full px-8 h-12 border-primary/20 hover:bg-primary/5 shadow-soft"
+            className="rounded-full px-6 sm:px-8 h-10 sm:h-12 border-primary/20 hover:bg-primary/5 shadow-soft text-sm"
             onClick={() => window.location.href = "/admin/analytics"}
           >
             <TrendingUp className="w-4 h-4 mr-2 text-accent" /> View Analytics
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 md:mb-8">
           {stats.map((s, i) => (
             <div
               key={s.label}
-              className="bg-card rounded-2xl p-5 shadow-soft border border-border/50 hover-lift animate-scale-in"
+              className="bg-card rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50 hover-lift animate-scale-in"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="flex items-center justify-between mb-3">

@@ -12,17 +12,17 @@ export const PopularPreview = () => {
   const popular = dishes.filter((d) => popularIds.includes(d.id));
 
   return (
-    <section className="py-24 bg-gradient-warm">
+    <section className="py-12 md:py-16 bg-gradient-warm">
       <div className="container">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4 animate-slide-up">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-8 gap-4 animate-slide-up">
           <div>
-            <p className="text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-3 flex items-center gap-2">
-              <Star className="w-4 h-4 fill-current" /> Tonight's Favourites
+            <p className="text-xs sm:text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-2 sm:mb-3 flex items-center gap-2">
+              <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-current" /> Tonight's Favourites
             </p>
-            <h2 className="font-display text-4xl sm:text-5xl font-bold text-primary">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary">
               Popular dishes guests love
             </h2>
-            <p className="text-muted-foreground text-lg mt-3">
+            <p className="text-muted-foreground text-sm sm:text-base mt-2 sm:mt-3">
               A taste of what's waiting on the menu.
             </p>
           </div>
@@ -31,7 +31,7 @@ export const PopularPreview = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {popular.map((dish, i) => (
             <article
               key={dish.id}
@@ -46,12 +46,12 @@ export const PopularPreview = () => {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
               </div>
-              <div className="p-5">
+              <div className="p-4">
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <h3 className="font-display text-xl font-semibold text-primary">{dish.name}</h3>
-                  <span className="font-display text-xl font-bold text-accent">${dish.price}</span>
+                  <h3 className="font-display text-lg sm:text-xl font-semibold text-primary">{dish.name}</h3>
+                  <span className="font-display text-lg sm:text-xl font-bold text-accent">${dish.price}</span>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">{dish.description}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{dish.description}</p>
                 <Button
                   variant="outline"
                   size="sm"

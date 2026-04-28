@@ -71,46 +71,46 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen relative grid lg:grid-cols-2">
+    <div className="bg-background min-h-screen relative grid lg:grid-cols-2">
       <div className="hidden lg:block relative overflow-hidden">
         <img src={heroImage} alt="Restaurant" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-hero" />
-        <div className="absolute inset-0 flex flex-col justify-between p-12 text-background">
+        <div className="absolute inset-0 flex flex-col justify-between p-6 sm:p-12 text-background">
           <Link to="/" className="flex items-center gap-2">
-            <span className="grid place-items-center w-10 h-10 rounded-full bg-gradient-gold shadow-gold">
-              <UtensilsCrossed className="w-5 h-5 text-accent-foreground" />
+            <span className="grid place-items-center w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-gradient-gold shadow-gold">
+              <UtensilsCrossed className="w-4 sm:w-5 h-4 sm:h-5 text-accent-foreground" />
             </span>
-            <span className="font-display text-2xl font-bold">
+            <span className="font-display text-lg sm:text-2xl font-bold">
               Maison<span className="text-gold">Verde</span>
             </span>
           </Link>
           <div className="max-w-md">
-            <h1 className="font-display text-5xl font-bold leading-tight mb-4">
+            <h1 className="font-display text-3xl sm:text-5xl font-bold leading-tight mb-3 sm:mb-4">
               Join the table. <span className="text-gold">Skip the wait.</span>
             </h1>
-            <p className="text-background/80 text-lg">
+            <p className="text-background/80 text-base sm:text-lg">
               Create an account to reserve, order, and enjoy a curated experience tailored to your taste.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-center p-6 sm:p-12 bg-gradient-warm min-h-screen">
-        <div className="w-full max-w-md animate-fade-in">
-          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <span className="grid place-items-center w-9 h-9 rounded-full bg-gradient-gold shadow-gold">
+      <div className="flex items-center justify-center p-4 sm:p-6 md:p-12 bg-gradient-warm">
+        <div className="w-full max-w-md animate-fade-in px-4">
+          <Link to="/" className="lg:hidden flex items-center gap-2 mb-6 sm:mb-8 justify-center">
+            <span className="grid place-items-center w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-gradient-gold shadow-gold">
               <UtensilsCrossed className="w-4 h-4 text-accent-foreground" />
             </span>
-            <span className="font-display text-xl font-bold text-primary">
+            <span className="font-display text-lg sm:text-xl font-bold text-primary">
               Maison<span className="text-gold">Verde</span>
             </span>
           </Link>
 
-          <div className="bg-card rounded-3xl shadow-elegant border border-border/50 p-8">
-            <h2 className="font-display text-3xl font-bold text-primary mb-2">Create account</h2>
-            <p className="text-muted-foreground mb-6 text-sm">A few details and you're in.</p>
+          <div className="bg-card rounded-2xl sm:rounded-3xl shadow-elegant border border-border/50 p-4 sm:p-6 md:p-8">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-primary mb-2">Create account</h2>
+            <p className="text-muted-foreground mb-4 sm:mb-6 text-xs sm:text-sm">A few details and you're in.</p>
 
-            <div className="grid grid-cols-2 gap-2 p-1 bg-secondary rounded-full mb-6">
+            <div className="grid grid-cols-2 gap-1 sm:gap-2 p-1 bg-secondary rounded-full mb-4 sm:mb-6">
               {([
                 { v: "user", label: "User", icon: User2 },
                 { v: "admin", label: "Admin", icon: ShieldCheck },
@@ -120,22 +120,22 @@ export default function Signup() {
                   type="button"
                   onClick={() => setRole(v)}
                   className={cn(
-                    "flex items-center justify-center gap-2 py-2 rounded-full text-sm font-medium transition-all",
+                    "flex items-center justify-center gap-1 sm:gap-2 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all",
                     role === v
                       ? "bg-primary text-primary-foreground shadow-soft"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <Icon className="w-4 h-4" /> {label}
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {label}
                 </button>
               ))}
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-4" noValidate>
+            <form onSubmit={onSubmit} className="space-y-3 sm:space-y-4" noValidate>
               <Field
                 id="name"
                 label="Full Name"
-                icon={<User2 className="w-3.5 h-3.5 text-accent" />}
+                icon={<User2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />}
                 value={form.name}
                 onChange={(v) => set("name", v)}
                 placeholder="Jane Doe"
@@ -145,7 +145,7 @@ export default function Signup() {
                 id="email"
                 label="Email"
                 type="email"
-                icon={<Mail className="w-3.5 h-3.5 text-accent" />}
+                icon={<Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />}
                 value={form.email}
                 onChange={(v) => set("email", v)}
                 placeholder="you@example.com"
@@ -155,7 +155,7 @@ export default function Signup() {
                 id="phone"
                 label="Contact Number"
                 type="tel"
-                icon={<Phone className="w-3.5 h-3.5 text-accent" />}
+                icon={<Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />}
                 value={form.phone}
                 onChange={(v) => set("phone", v)}
                 placeholder="+1 555 010 1234"
@@ -165,7 +165,7 @@ export default function Signup() {
                 id="password"
                 label="Password"
                 type="password"
-                icon={<Lock className="w-3.5 h-3.5 text-accent" />}
+                icon={<Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />}
                 value={form.password}
                 onChange={(v) => set("password", v)}
                 placeholder="At least 8 characters"
@@ -176,7 +176,7 @@ export default function Signup() {
                   id="setupKey"
                   label="Admin Setup Key"
                   type="password"
-                  icon={<ShieldCheck className="w-3.5 h-3.5 text-accent" />}
+                  icon={<ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-accent" />}
                   value={form.setupKey}
                   onChange={(v) => set("setupKey", v)}
                   placeholder="Provided by the server owner"
@@ -184,12 +184,12 @@ export default function Signup() {
                 />
               )}
 
-              <Button type="submit" variant="default" size="lg" className="w-full mt-2" disabled={submitting}>
+              <Button type="submit" variant="default" size="lg" className="w-full mt-2 text-sm" disabled={submitting}>
                 {submitting ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 
-            <p className="text-sm text-muted-foreground text-center mt-6">
+            <p className="text-xs sm:text-sm text-muted-foreground text-center mt-4 sm:mt-6">
               Already have an account?{" "}
               <Link to="/login" className="text-accent font-semibold hover:underline">
                 Login

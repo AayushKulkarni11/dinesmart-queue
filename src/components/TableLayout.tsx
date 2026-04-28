@@ -244,21 +244,21 @@ export const TableLayout = () => {
   };
 
   return (
-    <section id="tables" className="py-24 bg-gradient-warm">
+    <section id="tables" className="py-10 md:py-16 bg-gradient-warm">
       <div className="container">
-        <div className="text-center max-w-2xl mx-auto mb-12 animate-slide-up">
-          <p className="text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-3">Floor Plan</p>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-primary mb-4">
+        <div className="text-center max-w-2xl mx-auto mb-6 md:mb-8 animate-slide-up">
+          <p className="text-xs sm:text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-2 sm:mb-3">Floor Plan</p>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-3 sm:mb-4">
             Pick the perfect table
           </h2>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm sm:text-lg">
             30 tables with a practical mix: 5 for couples, 15 for groups of 4, and 10 for groups of 6.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid lg:grid-cols-4 gap-4 sm:gap-6">
           <TooltipProvider delayDuration={100}>
-            <div className="lg:col-span-3 relative bg-card rounded-3xl shadow-elegant border border-border/50 p-6 sm:p-8 overflow-hidden">
+            <div className="lg:col-span-3 relative bg-card rounded-2xl sm:rounded-3xl shadow-elegant border border-border/50 p-4 sm:p-6 md:p-8 overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--accent)/0.08),transparent_50%),radial-gradient(circle_at_70%_80%,hsl(var(--primary)/0.08),transparent_50%)] pointer-events-none" />
               <div
                 className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -303,21 +303,21 @@ export const TableLayout = () => {
                     </TooltipContent>
                   </Tooltip>
                 ))}
-                {!loading && tables.length === 0 && (
-                  <div className="col-span-full rounded-2xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">
-                    No table data available right now.
-                  </div>
-                )}
-              </div>
-            </div>
+                 {!loading && tables.length === 0 && (
+                   <div className="col-span-full rounded-2xl border border-dashed border-border/60 p-6 text-center text-sm text-muted-foreground">
+                     No table data available right now.
+                   </div>
+                 )}
+                </div>
+             </div>
           </TooltipProvider>
 
-          <div className="space-y-4">
-            <div className="bg-card rounded-2xl p-6 shadow-soft border border-border/50">
-              <h3 className="font-display text-lg font-semibold text-primary mb-4">Legend</h3>
-              <div className="space-y-3">
+           <div className="space-y-3 sm:space-y-4">
+            <div className="bg-card rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50">
+              <h3 className="font-display text-lg font-semibold text-primary mb-3 sm:mb-4">Legend</h3>
+              <div className="space-y-2 sm:space-y-3">
                 {(["available", "reserved", "occupied"] as Status[]).map((status) => (
-                  <div key={status} className="flex items-center gap-3 text-sm">
+                  <div key={status} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                     <span className={cn("w-4 h-4 rounded border-2", statusColor[status])} />
                     <span>{statusLabel[status]}</span>
                   </div>
@@ -325,16 +325,16 @@ export const TableLayout = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-card rounded-2xl p-6 shadow-soft border border-border/50">
-              <h3 className="font-display text-lg font-semibold text-primary mb-4">Capacity Mix</h3>
-              <div className="space-y-3">
+            <div className="bg-gradient-card rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50">
+              <h3 className="font-display text-lg font-semibold text-primary mb-3 sm:mb-4">Capacity Mix</h3>
+              <div className="space-y-2 sm:space-y-3">
                 <Stat label="2-seat tables" value={counts.seats2} accent="text-primary" />
                 <Stat label="4-seat tables" value={counts.seats4} accent="text-accent" />
                 <Stat label="6-seat tables" value={counts.seats6} accent="text-success" />
               </div>
             </div>
 
-            <div className="bg-card rounded-2xl p-6 shadow-soft border border-border/50">
+            <div className="bg-card rounded-2xl p-4 sm:p-5 shadow-soft border border-border/50">
               <h3 className="font-display text-lg font-semibold text-primary mb-4">
                 {selectedTable ? `Table T${selectedTable.tableNumber}` : "Reservation Details"}
               </h3>

@@ -47,77 +47,72 @@ export const AnalyticsDashboard = () => {
   ], []);
 
   return (
-    <div className="py-24 bg-gradient-warm min-h-screen">
+    <div className="py-8 md:py-12">
       <div className="container">
-        <div className="mb-10 animate-slide-up">
-          <p className="text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-3">Analytics</p>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-primary">Performance Insights</h2>
-          <p className="text-muted-foreground text-lg mt-3">Visualizing wait times, traffic patterns, and efficiency.</p>
+        <div className="mb-6 md:mb-8 animate-slide-up">
+          <p className="text-xs sm:text-sm font-semibold tracking-[0.2em] text-accent uppercase mb-2 sm:mb-3">Analytics</p>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">Performance Insights</h2>
+          <p className="text-muted-foreground text-sm sm:text-lg mt-2 sm:mt-3">Visualizing wait times, traffic patterns, and efficiency.</p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 md:mb-10">
           {stats.map((s, i) => (
             <div
               key={s.label}
-              className="bg-card rounded-2xl p-6 shadow-soft border border-border/50 hover-lift animate-scale-in"
+              className="bg-card rounded-2xl p-4 sm:p-6 shadow-soft border border-border/50 hover-lift animate-scale-in"
               style={{ animationDelay: `${i * 100}ms` }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-accent/15 grid place-items-center">
-                  <s.icon className={`w-6 h-6 ${s.accent}`} />
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-accent/15 grid place-items-center">
+                  <s.icon className={`w-4 h-4 sm:w-6 sm:h-6 ${s.accent}`} />
                 </div>
               </div>
-              <div className="font-display text-4xl font-bold text-primary">{s.value}</div>
-              <div className="text-sm text-muted-foreground mt-1 font-medium">{s.label}</div>
+              <div className="font-display text-2xl sm:text-4xl font-bold text-primary">{s.value}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">{s.label}</div>
             </div>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
           {/* Wait Time Trend */}
-          <div className="bg-card rounded-3xl p-8 shadow-elegant border border-border/50 animate-fade-in">
-            <h3 className="font-display text-2xl font-bold text-primary mb-8 flex items-center gap-3">
-              <Clock className="w-6 h-6 text-accent" /> Wait Time Trend (Evening)
+          <div className="bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-elegant border border-border/50 animate-fade-in">
+            <h3 className="font-display text-lg sm:text-2xl font-bold text-primary mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+              <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-accent" /> Wait Time Trend (Evening)
             </h3>
-            <div className="h-[300px] w-full">
+            <div className="h-60 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={waitTimeData}>
                   <defs>
                     <linearGradient id="colorWait" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#FF7F50" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#FF7F50" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748B" }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748B" }} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
-                  />
-                  <Area type="monotone" dataKey="wait" stroke="#FF7F50" strokeWidth={3} fillOpacity={1} fill="url(#colorWait)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: '0.5rem', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }} />
+                  <Area type="monotone" dataKey="wait" stroke="var(--accent)" strokeWidth={2} fillOpacity={1} fill="url(#colorWait)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Weekly Traffic */}
-          <div className="bg-card rounded-3xl p-8 shadow-elegant border border-border/50 animate-fade-in" style={{ animationDelay: "200ms" }}>
-            <h3 className="font-display text-2xl font-bold text-primary mb-8 flex items-center gap-3">
-              <Calendar className="w-6 h-6 text-primary" /> Weekly Traffic
+          {/* Guest Traffic Pattern */}
+          <div className="bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-elegant border border-border/50 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <h3 className="font-display text-lg sm:text-2xl font-bold text-primary mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+              <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-accent" /> Guest Traffic Pattern
             </h3>
-            <div className="h-[300px] w-full">
+            <div className="h-60 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={trafficData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748B" }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#64748B" }} />
-                  <Tooltip
-                    cursor={{ fill: "transparent" }}
-                    contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
-                  />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
-                    {trafficData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 5 ? "#FF7F50" : "#4169E1"} fillOpacity={0.8} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: '0.5rem', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }} />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                    {trafficData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill="var(--accent)" />
                     ))}
                   </Bar>
                 </BarChart>
