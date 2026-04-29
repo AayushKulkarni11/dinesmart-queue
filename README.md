@@ -15,6 +15,7 @@ DineSmart Queue is a full-stack restaurant queue and table management app. It co
 - [Project Structure](#project-structure)
 - [Frontend Routes](#frontend-routes)
 - [Backend API](#backend-api)
+- [Deployment](#deployment)
 - [Environment Variables](#environment-variables)
 - [Getting Started](#getting-started)
 - [Useful Scripts](#useful-scripts)
@@ -112,6 +113,21 @@ Base URL: `http://localhost:5000/api`
 | `PUT` | `/admin/queue/:id/seat` | Seat a customer | Yes |
 | `DELETE` | `/admin/queue/:id` | Remove from queue | Yes |
 | `PUT` | `/admin/tables/:id/status` | Update table status | Yes |
+
+## Deployment
+
+This project is currently configured and deployed on **Render** using two separate services.
+
+### Frontend (Static Site)
+- **Root Directory**: `.` (leave empty)
+- **Build Command**: `npm install && npm run build`
+- **Publish Directory**: `dist`
+
+### Backend (Web Service)
+- **Root Directory**: `backend`
+- **Build Command**: `npm install`
+- **Start Command**: `npm start`
+- *Note: Ensure you set all necessary environment variables (like `MONGO_URI`, `JWT_SECRET`, `CORS_ORIGIN`, etc.) in your Render dashboard settings.*
 
 ## Environment Variables
 ### Frontend
