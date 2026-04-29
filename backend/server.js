@@ -26,20 +26,9 @@ async function start() {
 
   const app = express();
 
-  const allowedOrigins = String(config.corsOrigin || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
   app.use(
     cors({
-      origin(origin, callback) {
-        // Allow non-browser clients (no Origin header), like curl/postman
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes("*")) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        return callback(new Error("Not allowed by CORS"));
-      },
+      origin: true, // Automatically reflect request origin
       credentials: true,
     }),
   );

@@ -5,7 +5,7 @@ let ioInstance;
 function initSockets(httpServer, { corsOrigin = "*" } = {}) {
   const io = new Server(httpServer, {
     cors: {
-      origin: corsOrigin,
+      origin: true,
       credentials: true,
     },
   });
