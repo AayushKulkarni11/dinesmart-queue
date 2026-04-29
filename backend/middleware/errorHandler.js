@@ -1,6 +1,4 @@
 function errorHandler(err, req, res, next) {
-  // eslint-disable-next-line no-unused-vars
-  const _next = next;
 
   const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
 

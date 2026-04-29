@@ -39,12 +39,12 @@ const trafficData = [
 const COLORS = ["#FF7F50", "#FF4500", "#FFD700", "#32CD32", "#4169E1"];
 
 export const AnalyticsDashboard = () => {
-  const stats = useMemo(() => [
+  const stats = [
     { label: "Avg Wait Time", value: "24m", icon: Clock, accent: "text-accent" },
     { label: "Total Guests Today", value: "142", icon: Users, accent: "text-primary" },
     { label: "Peak Hour", value: "7:30 PM", icon: TrendingUp, accent: "text-success" },
     { label: "Busiest Day", value: "Saturday", icon: Calendar, accent: "text-warning" },
-  ], []);
+  ];
 
   return (
     <div className="py-8 md:py-12">

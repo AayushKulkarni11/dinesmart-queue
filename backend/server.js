@@ -68,13 +68,11 @@ async function start() {
   initSockets(server, { corsOrigin: config.corsOrigin });
 
   server.listen(config.port, () => {
-    // eslint-disable-next-line no-console
     console.log(`Backend listening on port ${config.port}`);
   });
 }
 
 start().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error("Fatal startup error:", err);
   process.exit(1);
 });
