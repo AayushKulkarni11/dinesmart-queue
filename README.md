@@ -6,10 +6,6 @@
 ![GitHub Forks](https://img.shields.io/github/forks/aayushkulkarni/dinesmart-queue)
 ![GitHub Followers](https://img.shields.io/github/followers/aayushkulkarni)
 
-<div align="center">
-  <img src="./screenshots/home.png" alt="DineSmart Queue Home Page" width="100%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);" />
-</div>
-
 DineSmart Queue is a full-stack restaurant queue and table management app. It combines a Vite + React frontend with an Express + MongoDB backend for guest queueing, table status tracking, and admin operations.
 
 ## Table of Contents
@@ -44,15 +40,15 @@ DineSmart Queue is a full-stack restaurant queue and table management app. It co
 ## Screenshots
 
 <div align="center">
-  <img src="./screenshots/admin-dashboard.png" alt="Operations Dashboard" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
+  <img src="./screenshots/1.png" alt="Operations Dashboard" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
   &nbsp;
-  <img src="./screenshots/live-queue.png" alt="Live Queue" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
+  <img src="./screenshots/2.png" alt="Live Queue" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
 </div>
 <br />
 <div align="center">
-  <img src="./screenshots/table-management.png" alt="Table Management" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
+  <img src="./screenshots/3.png" alt="Table Management" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
   &nbsp;
-  <img src="./screenshots/home.png" alt="Home Page" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
+  <img src="./screenshots/4.png" alt="Home Page" width="48%" style="border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" />
 </div>
 
 ## Tech Stack
