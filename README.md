@@ -6,6 +6,11 @@
 ![GitHub Forks](https://img.shields.io/github/forks/aayushkulkarni/dinesmart-queue)
 ![GitHub Followers](https://img.shields.io/github/followers/aayushkulkarni)
 
+<div align="center">
+  <!-- TODO: Replace with an actual screenshot of the project -->
+  <img src="https://via.placeholder.com/1000x500?text=DineSmart+Queue+Dashboard" alt="Project Screenshot" width="100%" style="border-radius: 8px;" />
+</div>
+
 DineSmart Queue is a full-stack restaurant queue and table management app. It combines a Vite + React frontend with an Express + MongoDB backend for guest queueing, table status tracking, and admin operations.
 
 ## Table of Contents
@@ -37,17 +42,37 @@ DineSmart Queue is a full-stack restaurant queue and table management app. It co
 - Socket.IO server for realtime update events
 
 ## Tech Stack
-- Frontend: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Router
-- Backend: Node.js, Express, MongoDB, Mongoose, Socket.IO
-- Testing: Vitest, Testing Library
+
+<div align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
+  <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socketdotio&logoColor=white" alt="Socket.io" />
+</div>
+
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Router
+- **Backend**: Node.js, Express, MongoDB, Mongoose, Socket.IO
+- **Testing**: Vitest, Testing Library
 
 ## Project Structure
 ```text
 .
-├── src/                  # React frontend
-├── public/               # Static frontend assets
-├── backend/              # Express API + MongoDB models
-└── README.md
+├── 📁 src/                  # React frontend
+│   ├── 📁 components/       # Reusable UI components
+│   ├── 📁 pages/            # Application pages
+│   ├── 📁 hooks/            # Custom React hooks
+│   └── 📁 utils/            # Helper functions
+├── 📁 public/               # Static frontend assets
+├── 📁 backend/              # Express API + MongoDB models
+│   ├── 📁 controllers/      # Route controllers
+│   ├── 📁 models/           # Mongoose schemas
+│   ├── 📁 routes/           # API routes
+│   └── 📄 server.js         # Entry point
+└── 📄 README.md
 ```
 
 ## Frontend Routes
@@ -62,27 +87,21 @@ DineSmart Queue is a full-stack restaurant queue and table management app. It co
 ## Backend API
 Base URL: `http://localhost:5000/api`
 
-### Auth
-- `POST /auth/register`
-- `POST /auth/register-admin`
-- `POST /auth/login`
-- `POST /auth/admin-login`
-
-### Queue
-- `GET /queue`
-- `POST /queue/join`
-
-### Tables
-- `GET /tables`
-- `PUT /tables/:id/status`
-
-### Admin
-These routes require an admin bearer token.
-- `GET /admin/dashboard`
-- `PUT /admin/queue/:id/call`
-- `PUT /admin/queue/:id/seat`
-- `DELETE /admin/queue/:id`
-- `PUT /admin/tables/:id/status`
+| Method | Endpoint | Description | Auth Required |
+| ------ | -------- | ----------- | ------------- |
+| `POST` | `/auth/register` | Register a new user | No |
+| `POST` | `/auth/register-admin` | Register an admin | Admin Key |
+| `POST` | `/auth/login` | User login | No |
+| `POST` | `/auth/admin-login` | Admin login | No |
+| `GET` | `/queue` | Get current queue | No |
+| `POST` | `/queue/join` | Join the queue | No |
+| `GET` | `/tables` | View table layout | No |
+| `PUT` | `/tables/:id/status` | Update table status | No |
+| `GET` | `/admin/dashboard` | Admin dashboard data | Yes |
+| `PUT` | `/admin/queue/:id/call` | Call a customer | Yes |
+| `PUT` | `/admin/queue/:id/seat` | Seat a customer | Yes |
+| `DELETE` | `/admin/queue/:id` | Remove from queue | Yes |
+| `PUT` | `/admin/tables/:id/status` | Update table status | Yes |
 
 ## Environment Variables
 ### Frontend
